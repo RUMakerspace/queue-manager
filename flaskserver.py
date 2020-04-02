@@ -23,6 +23,10 @@ def addPrint(test, test2):
 
 @app.route('/')
 def mHomePage():
+	return render_template("homepage.html")
+
+@app.route('/job')
+def mNewJob():
 	return render_template("new_job.html")
 
 #These two paths are responsible for showing off our static paths without needing a total reorg.
