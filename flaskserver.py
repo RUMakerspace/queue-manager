@@ -7,7 +7,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect("example.db")
-        db.cursor().execute('''CREATE TABLE IF NOT EXISTS printjobs (name text, data blob)''')
+        #db.cursor().execute('''CREATE TABLE IF NOT EXISTS printjobs (name text, data blob)''')
     return db
 
 @app.teardown_appcontext
@@ -42,7 +42,7 @@ def addToDB():
 	result = request.form
 	pprint(result)
 	
-	addPrint("we got","data bitches!")
+	addPrint("we got","data!")
 	return mHomePage()
 
 if __name__=='__main__':
