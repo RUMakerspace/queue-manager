@@ -50,18 +50,20 @@
 
 	<form>
 
+	<!-- Print Type! -->
 	<div class="form-check form-check-inline">
-  		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+  		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="printIsFDM" value="option1">
  		<label class="form-check-label" for="inlineRadio1">FDM (Fused Deposition Modeling)</label>
 	</div>
 	<div class="form-check form-check-inline">
- 		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+ 		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="printIsSLA" value="option2">
  		<label class="form-check-label" for="inlineRadio2">SLA (Stereolithography)</label>
 	</div>
 	<div class="form-check form-check-inline">
-  		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3">
+  		<input class="form-check-input" type="radio" name="inlineRadioOptions" id="printIsMarkforge" value="option3">
   		<label class="form-check-label" for="inlineRadio3">Markforge FDM (Onyx, Continuous Carbon Fiber)</label>
 	</div>
+
 
 	<!-- Row One NetID, Name, Job Name-->
 	<div class="form-row">
@@ -123,8 +125,23 @@
 
 	<label class="form-check-label" for="printSettings">Notes & Other Settings</label>
 			<input type="text" class="form-control" id="printSettings" placeholder="2540% Scale ~> 76.2mm Z height.">
+
+	<label class="form-check-label" for="printHelperName">Helped by:</label>
+    	<input type="text" class="form-control" id="printHelperName" placeholder="Dan">
 	</div>
 
+	<div class="form-check form-check-inline">
+  		<input class="form-check-input" type="radio" name="paymentMethod" id="printPayRUExpress" value="option1">
+ 		<label class="form-check-label" for="inlineRadio1">RUExpress</label>
+	</div>
+	<div class="form-check form-check-inline">
+ 		<input class="form-check-input" type="radio" name="paymentMethod" id="printPayIPO" value="option2">
+ 		<label class="form-check-label" for="inlineRadio2">IPO</label>
+	</div>
+	<div class="form-check form-check-inline">
+  		<input class="form-check-input" type="radio" name="paymentMethod" id="printPayCredit" value="option3">
+  		<label class="form-check-label" for="inlineRadio3">Credit</label>
+	</div>
 	</div>
   	<button type="submit" class="btn btn-primary">Submit</button>
 	</form>
