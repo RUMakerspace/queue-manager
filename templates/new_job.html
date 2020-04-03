@@ -6,6 +6,8 @@
 	<form action="/job/add" method="POST">
 
 	<!-- Print Type! -->
+	<div class="form-row">
+	<div class="col-sm-6">
 	<div class="form-check form-check-inline">
   		<input class="form-check-input" type="radio" name="printType" id="printIsFDM" value="fdm">
  		<label class="form-check-label" for="inlineRadio1">FDM (Fused Deposition Modeling)</label>
@@ -16,10 +18,19 @@
 	</div>
 	<div class="form-check form-check-inline">
   		<input class="form-check-input" type="radio" name="printType" id="printIsMarkforge" value="markforged">
-  		<label class="form-check-label" for="inlineRadio3">Markforge FDM (Onyx, Continuous Carbon Fiber)</label>
+  		<label class="form-check-label" for="inlineRadio3">Markforge FDM</label>
 	</div>
-
-
+	</div>
+	<!-- Printer ID! =-->
+	<div class="col-sm-6">
+	<label for="printerFamily">Select Printer Family:</label>
+		<select class="form-control" name="printerFamily" id="printerFamily">
+		<option>Ultimaker S3</option>
+		<option>Ultimaker S5</option>
+		<option>Prusa i3 MK2</option>
+		</select>
+	</div>
+	</div>
 	<!-- Row One NetID, Name, Job Name-->
 	<div class="form-row">
 		<div class="form-group col-md-3">
