@@ -3,6 +3,13 @@ import requests
 import json
 import datetime
 
+### TODO LIST
+# Clean up logic for bulk prints.
+# have a key renamer group that doesn't suck?
+# Edit page for prints.
+# Print status change log?
+# Dashboard for TV?
+# IPO dropdown
 if sys.version < "2.4":
     os.execl("/usr/bin/python3.6", "python3.6", *sys.argv)
 
@@ -23,8 +30,11 @@ printDB = "prints.json"
 
 
 def getPrints(howMany=20):
-    printsJSON = json.loads(open(printDB).read())
-    print(printsJSON)
+    try:
+        printsJSON = json.loads(open(printDB).read())
+    except:
+        makePrintDB()
+        printsJSON = json.loads(open(printDB).read())
 
     printsJSON = sorted(
         printsJSON, key=lambda x: (x["unixTime"], x["hash"]), reverse=True
@@ -39,11 +49,12 @@ def makePrintDB():
 
 
 def addPrint(printData):
-	try:
-		printJSON = json.loads(open(printDB).read())
-	except:
-		makePrintDB()
-		printJSON = json.loads(open(printDB).read())
+    try:
+        printJSON = json.loads(open(printDB).read())
+    except:
+        makePrintDB()
+        printJSON = json.loads(open(printDB).read())
+        
     import time
     import hashlib
 
@@ -121,7 +132,7 @@ def login():
         # Login and validate the user.
         # user should be an instance of your `User` class
         if "email" not in flask.request.form:
-            flask.redirect(flask.url_for("index"))
+            flask.redirect(flask.url_for("indexPage"))
         email = flask.request.form["email"]
         try:
             if flask.request.form["password"] == users[email]["password"]:
@@ -134,7 +145,7 @@ def login():
         # is_safe_url should check if the url is safe for redirects.
         # See http://flask.pocoo.org/snippets/62/ for an example.
 
-        return flask.redirect(flask.url_for("index"))
+        return flask.redirect(flask.url_for("indexPage"))
 
 
 @application.route("/logout")
@@ -177,10 +188,8 @@ def indexPage():
 @application.route("/add", methods=["GET", "POST"])
 def addPage():
     if request.method == "POST":
-        from pprint import pprint
-
-        pprint(request.form.to_dict())
         addPrint(request.form.to_dict())
+        return redirect(url_for("indexPage"))
     return render_template("add.html")
 
 
@@ -221,9 +230,7 @@ def hasSubprints(request):
             subjobCollected[index][key] = request[
                 key
             ]  # request as added back in is just the k/v as a dict.
-    from pprint import pprint
 
-    pprint(subjobCollected)
     return [hasSubjobs, numSubjobs, subjobCollected]
 
 
@@ -231,8 +238,6 @@ def hasSubprints(request):
 def addBulkPage():
     if request.method == "POST":
         tempData = request.form.to_dict()
-        from pprint import pprint
-
         hasSubjobs, numSubjobs, sj = hasSubprints(request.form.to_dict())
         if numSubjobs > 0:
             # make a temp request, clear out any subjob keys
@@ -256,5 +261,5 @@ def addBulkPage():
                 temp["location"] = sj[subjob][str("subjob_location_" + str(subjob))]
 
                 addPrint(temp)
-
+        redirect(url_for("indexPage"))
     return render_template("addbulk.html")
