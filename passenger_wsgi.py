@@ -13,12 +13,6 @@ try:
 except:
     debug = False
 
-if not debug:
-    INTERP = os.path.join(os.environ["HOME"], "frcregs.com", "bin", "python")
-    if sys.executable != INTERP:
-        os.execl(INTERP, INTERP, *sys.argv)
-    sys.path.append(os.getcwd())
-
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
 
@@ -45,17 +39,28 @@ def makePrintDB():
 
 
 def addPrint(printData):
-    printJSON = json.loads(open(printDB).read())
+	try:
+		printJSON = json.loads(open(printDB).read())
+	except:
+		makePrintDB()
+		printJSON = json.loads(open(printDB).read())
     import time
     import hashlib
 
     printData["unixTime"] = time.time()
-    printData["hash"] = str(hashlib.md5(str.encode(str(printData))).hexdigest())
+    printData["hash"] = str(hashlib.md5(str.encode(str(printData))).hexdigest())  #This allows us to uniquely address each item, and the time difference ensures different times of the same contents get different prints.
 
     printJSON.append(printData)
 
     with open(printDB, "w") as x:
         x.write(json.dumps(printJSON))
+
+
+def getPrintByHash(hash):
+    printJSON = json.loads(open(printDB).read())
+    for x in printJSON:
+        if x["hash"] == hash:
+            return x
 
 
 ### LOGIN SHIT
@@ -166,7 +171,7 @@ def loginHelper():
 @application.route("/")
 def indexPage():
     # makePrintDB()
-    return render_template("main.html", prints=getPrints(5))
+    return render_template("main.html", prints=getPrints(20))
 
 
 @application.route("/add", methods=["GET", "POST"])
@@ -185,7 +190,7 @@ def addPage():
 def managePrint(hash):
     if request.method == "POST":
         print("Post bois")
-    return render_template("add.html")
+    return jsonify(getPrintByHash(hash))
 
 
 def hasSubprints(request):
@@ -229,7 +234,6 @@ def addBulkPage():
         from pprint import pprint
 
         hasSubjobs, numSubjobs, sj = hasSubprints(request.form.to_dict())
-        addPrint(tempData)
         if numSubjobs > 0:
             # make a temp request, clear out any subjob keys
             # then append the keys as a subdict, then iterate to add them.
@@ -240,6 +244,9 @@ def addBulkPage():
             for x in list(placeholderKeys):
                 if "subjob" in x:
                     placeholderReq.pop(x, None)
+
+            # we use placeholdereq here so the parent job doesn't contain all subjobs as well.
+            addPrint(placeholderReq)
 
             for subjob in sj.keys():
                 temp = placeholderReq
