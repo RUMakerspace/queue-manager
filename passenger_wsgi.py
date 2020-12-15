@@ -25,6 +25,32 @@ import flask
 application = Flask(__name__)
 application.secret_key = open('supersecret.key').read()
 
+printDB = "prints.json"
+
+def getPrints(howMany=20):
+	printsJSON = json.loads(open(printDB).read())
+	print(printsJSON)
+	
+	printsJSON = sorted(printsJSON, key = lambda x: (x['unixTime'], x['hash']), reverse=True)
+	
+	return printsJSON[:howMany]
+
+def makePrintDB():
+	with open(printDB,'w') as prints:
+		prints.write(json.dumps([]))
+		
+def addPrint(printData):
+	printJSON = json.loads(open(printDB).read())
+	import time
+	import hashlib
+	printData['unixTime'] = time.time()
+	printData['hash'] = str(hashlib.md5(str.encode(str(printData))).hexdigest())
+	
+	printJSON.append(printData)
+	
+	with open(printDB,'w') as x:
+		x.write(json.dumps(printJSON))
+		
 ### LOGIN SHIT
 import flask_login
 from flask_login import LoginManager, UserMixin, \
@@ -125,11 +151,36 @@ def loginHelper():
 
 @application.route('/')    
 def indexPage():
-	return render_template('main.html')
+	#makePrintDB()
+	return render_template('main.html', prints=getPrints(5))
 	
 @application.route('/add', methods=['GET','POST'])    
 def addPage():
 	if request.method == "POST":
 		from pprint import pprint
-		pprint(request.form)
+		pprint(request.form.to_dict())
+		addPrint(request.form.to_dict())
 	return render_template('add.html')
+	
+def hasSubprints(request):
+	hasSubjobs = False
+	numSubjobs = 0
+	derivedKeys = request.keys()
+	for key in derivedKeys:
+		if "subjob" in key:
+			hasSubjobs = True
+			if int(key.split("_")[2])  > numSubjobs:
+				numSubjobs = int(key.split("_")[2])
+				
+	return [hasSubjobs, numSubjobs]
+@application.route('/addbulk', methods=['GET','POST'])    
+def addBulkPage():
+	if request.method == "POST":
+		tempData = request.form.to_dict()
+		from pprint import pprint
+
+		hasSubjobs, numSubjobs = hasSubprints(request.form.to_dict())
+		
+		print(hasSubjobs)
+		print(numSubjobs)
+	return render_template('addbulk.html')

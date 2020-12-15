@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 <form class="needs-validation" novalidate style="width:100%;" method="POST">
+
+
 <div class="row mt-3">
 <div class="bs-component">
 <h3>
@@ -8,10 +10,12 @@ Jobs Info
 </h3>
 </div>
 </div>
+
+
 <div class="row mt-3">
 <div class="col-lg-6">
 <div class="form-group">
-    <label for="jobName">Job Name</label>
+    <label for="jobName">Overall Job Information</label>
     <input type="text" class="form-control" name="parentJobName" id="jobName" placeholder="Like 'Mission D.I.C.E. Keychains'" required>
   </div>
   
@@ -27,6 +31,7 @@ Jobs Info
 </div>
 
 <div class="col-lg-6">
+<p>This metadata is for the stuff that's across all of them.</p>
 <div class="form-group">
 <label for="parent_loc" >File Location</label>
                     <select class="form-control form-control-sm" name="location" id="parent_loc" required>
@@ -88,9 +93,51 @@ Jobs Info
 
 <div class="row mt-3">
 <div class="col-lg-12">
-<button class="btn btn-primary" type="submit">Submit Print</button>
+<div class="bs-component">
+<h3>Additional Jobs <button type="button" class="btn btn-primary" onclick="addSubjob()">add subjob</button></h3>
+<p> Each subjob will create an additional job with the same NetID and projectname to the above one, and they are submitted all at once.
 </div>
-
+<table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Subname</th>
+                    <th scope="col">File Location</th>
+					<th scope="col">Notes</th>
+					<th scope="col">Duration</th>
+                    <th scope="col">Done?</th>
+                  </tr>
+                </thead>
+                <tbody id="subjobs">
+                  <tr>
+                    <td> <input type="text" class="form-control form-control-sm" placeholder="Subjob Name" name ="subjob_name_1" id="subjobname1" required>	</td>
+                    <td>
+                    <select class="form-control form-control-sm" name="subjob_location_1" id="location1" required>
+					  <option value="">Please choose one.</option>
+                      <option value="email">Email</option>
+                      <option value="thaw">Thawspace</option>
+                      <option value="teams">MS Teams</option>
+                      <option value="other">Other (use notes)</option>
+                    </select>
+					
+					</td>
+                    <td>
+                <input type="text" class="form-control form-control-sm" placeholder="Notes" name="subjob_notes_1" id="notes1" required>		
+					</td>
+					<td>
+    <input type="text" class="form-control form-control-sm" name="subjob_printtme_1" id="subjob_printtime_1" placeholder = "Like '3h12m42s'" required>
+					</td>
+					<td>
+					<div class="custom-control custom-checkbox form-control-sm">
+                    <input type="checkbox" class="custom-control-input" name="subjob_isDone_1" id="isDone1">
+                    <label class="custom-control-label" for="isDone1"></label>
+                  </div>
+					
+					</td>
+                  </tr>
+                </tbody>
+              </table>
+</div>
+<button class="btn btn-primary" type="submit">Submit Print(s)</button>
 </div>
 
 </form>
@@ -108,10 +155,27 @@ var templateItemTemp = templateItem.replace(new RegExp('1', 'g'), numSubjobs);
 
 //this function is responsible for removing the first item that's hidden once it loads b/c otherwise the required boxes are problematic.
 document.getElementById("subjobs").innerHTML+=(templateItemTemp);
-if (numSubjobs > 0) {
-document.getElementById("subjobs").children[0].outerHTML="";
 }
-}
+</script>
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
 </script>
 {% endblock %}
 
