@@ -26,53 +26,11 @@ import flask
 application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
-printDB = "prints.json"
+# Our database layer.
+from DataProvider import DataProvider
+from pprint import pprint
 
-
-def getPrints(howMany=20):
-    try:
-        printsJSON = json.loads(open(printDB).read())
-    except:
-        makePrintDB()
-        printsJSON = json.loads(open(printDB).read())
-
-    printsJSON = sorted(
-        printsJSON, key=lambda x: (x["unixTime"], x["hash"]), reverse=True
-    )
-
-    return printsJSON[:howMany]
-
-
-def makePrintDB():
-    with open(printDB, "w") as prints:
-        prints.write(json.dumps([]))
-
-
-def addPrint(printData):
-    try:
-        printJSON = json.loads(open(printDB).read())
-    except:
-        makePrintDB()
-        printJSON = json.loads(open(printDB).read())
-        
-    import time
-    import hashlib
-
-    printData["unixTime"] = time.time()
-    printData["hash"] = str(hashlib.md5(str.encode(str(printData))).hexdigest())  #This allows us to uniquely address each item, and the time difference ensures different times of the same contents get different prints.
-
-    printJSON.append(printData)
-
-    with open(printDB, "w") as x:
-        x.write(json.dumps(printJSON))
-
-
-def getPrintByHash(hash):
-    printJSON = json.loads(open(printDB).read())
-    for x in printJSON:
-        if x["hash"] == hash:
-            return x
-
+db = DataProvider()
 
 ### LOGIN SHIT
 import flask_login
@@ -182,7 +140,7 @@ def loginHelper():
 @application.route("/")
 def indexPage():
     # makePrintDB()
-    return render_template("main.html", prints=getPrints(20))
+    return render_template("main.html", prints=db.getPrints())
 
 
 @application.route("/add", methods=["GET", "POST"])
@@ -199,7 +157,7 @@ def addPage():
 def managePrint(hash):
     if request.method == "POST":
         print("Post bois")
-    return jsonify(getPrintByHash(hash))
+    return jsonify(db.getPrintByHash(hash))
 
 
 def hasSubprints(request):
