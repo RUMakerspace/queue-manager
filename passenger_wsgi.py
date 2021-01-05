@@ -146,7 +146,7 @@ def indexPage():
 @application.route("/add", methods=["GET", "POST"])
 def addPage():
     if request.method == "POST":
-        addPrint(request.form.to_dict())
+        db.addPrint(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
 
@@ -191,7 +191,15 @@ def hasSubprints(request):
 
     return [hasSubjobs, numSubjobs, subjobCollected]
 
-
+@application.route("/manage/<hash>/<action>")
+def changePrintStatus(hash, action):
+	db.addPrintLog(hash, action, "")
+	return redirect(url_for('indexPage'))
+	
+@application.route("/edit/<hash>")
+def editPrint(hash):
+	return render_template("edit.html", actions=db.getPrintByHash(hash)['printHistory'])
+	
 @application.route("/addbulk", methods=["GET", "POST"])
 def addBulkPage():
     if request.method == "POST":
@@ -209,7 +217,7 @@ def addBulkPage():
                     placeholderReq.pop(x, None)
 
             # we use placeholdereq here so the parent job doesn't contain all subjobs as well.
-            addPrint(placeholderReq)
+            db.addPrint(placeholderReq)
 
             for subjob in sj.keys():
                 temp = placeholderReq
@@ -218,6 +226,6 @@ def addBulkPage():
                 temp["printTime"] = sj[subjob][str("subjob_printtime_" + str(subjob))]
                 temp["location"] = sj[subjob][str("subjob_location_" + str(subjob))]
 
-                addPrint(temp)
+                db.addPrint(temp)
         redirect(url_for("indexPage"))
     return render_template("addbulk.html")

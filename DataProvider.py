@@ -31,9 +31,9 @@ class DataProvider:
             prints.write(json.dumps([]))
 
     # This is a wrapper for a lambda we expect to use for multiple renderers.
-    def sortDB(self, inputData):
+    def sortDB(self, inputData, reverse=False):
         inputData = sorted(
-            inputData, key=lambda x: (x["unixTime"], x["hash"]), reverse=True
+            inputData, key=lambda x: (x["unixTime"], x["hash"]), reverse=reverse
         )
         return inputData
 
@@ -51,7 +51,7 @@ class DataProvider:
     def addPrint(self, printData):
         dbE = self.dbExists(True)
         if dbE[0]:
-            printsJSON = self.sortDB(dbE[1])
+            printJSON = self.sortDB(dbE[1])
 
         printData["unixTime"] = time.time()
         printData["hash"] = str(
@@ -64,7 +64,31 @@ class DataProvider:
             x.write(json.dumps(printJSON))
 
     def getPrintByHash(self, hash):
-        printJSON = getPrints(-1)
+        printJSON = self.getPrints(-1)
         for x in printJSON:
             if x["hash"] == hash:
                 return x
+                
+    def addPrintLog(self, hash, action, note):
+        printToModify = self.getPrintByHash(hash)
+        if "printHistory" not in printToModify:
+            printToModify['printHistory'] = []
+            
+        history = {}
+        history['action'] = action
+        history['note'] = note
+        history['unixTime'] = time.time()
+        
+        printToModify['printHistory'].append(history)
+        
+        printJSON = json.loads(open(self.printDB).read())
+        
+        for key, item in enumerate(printJSON):
+            if item['hash'] == printToModify['hash']:
+                printJSON[key] = printToModify
+    
+        with open(self.printDB, "w") as x:
+            x.write(json.dumps(printJSON))
+        
+   
+        
