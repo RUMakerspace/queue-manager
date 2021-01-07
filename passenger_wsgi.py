@@ -135,12 +135,37 @@ def loginHelper():
         return render_template("pw.html")
     # print(request.values)
     return redirect(url_for("index"))
-
-
+    
+    #We return whether there is a finished
+    # tag inside the history, and return False
+    # , to mean it *has* finished, if it has.
+def hasUnfinished(item):
+    if 'printHistory' not in item:
+        return True
+    for k in item['printHistory']:
+        if k['action'] == "finished":
+            return False
+    return True
+	
+def hasFinished(item):
+    if 'printHistory' not in item:
+        return False
+    for k in item['printHistory']:
+        if k['action'] == "finished":
+            return True
+    return False
+	
 @application.route("/")
 def indexPage():
-    # makePrintDB()
-    return render_template("main.html", prints=db.getPrints())
+    prints = db.getPrints(-1)
+    prints = filter(hasUnfinished, prints)
+    return render_template("main.html", prints=prints)
+
+@application.route("/finished")
+def finishedPage():
+    prints = db.getPrints(-1)
+    prints = filter(hasFinished, prints)
+    return render_template("main.html", prints=prints, finished=True)
 
 
 @application.route("/add", methods=["GET", "POST"])
@@ -191,15 +216,18 @@ def hasSubprints(request):
 
     return [hasSubjobs, numSubjobs, subjobCollected]
 
+
 @application.route("/manage/<hash>/<action>")
 def changePrintStatus(hash, action):
-	db.addPrintLog(hash, action, "")
-	return redirect(url_for('indexPage'))
-	
+    db.addPrintLog(hash, action, "")
+    return redirect(url_for("indexPage"))
+
+
 @application.route("/edit/<hash>")
 def editPrint(hash):
-	return render_template("edit.html", actions=db.getPrintByHash(hash)['printHistory'])
-	
+    return render_template("edit.html", actions=db.getPrintByHash(hash)["printHistory"])
+
+
 @application.route("/addbulk", methods=["GET", "POST"])
 def addBulkPage():
     if request.method == "POST":
@@ -211,6 +239,7 @@ def addBulkPage():
             import copy
 
             placeholderReq = copy.deepcopy(request.form.to_dict())
+            placeholderReq['printHistory'] = []
             placeholderKeys = placeholderReq.keys()
             for x in list(placeholderKeys):
                 if "subjob" in x:

@@ -63,32 +63,38 @@ class DataProvider:
         with open(self.printDB, "w") as x:
             x.write(json.dumps(printJSON))
 
+    # Returns the contents of a print info dump
+    # only by the hash.
     def getPrintByHash(self, hash):
+
         printJSON = self.getPrints(-1)
-        for x in printJSON:
-            if x["hash"] == hash:
-                return x
-                
+        return list(filter(lambda x: x["hash"] == hash, printJSON))[0]
+        # for x in printJSON:
+        #    if x["hash"] == hash:
+        #        return x
+
+    # This function finds a print in-line
+    # the JSON store by hash, if there is
+    # no history, adds one.  In doing so,
+    # We have a timestamped and ordered log
+    # to keep track of what happened to a print.
     def addPrintLog(self, hash, action, note):
         printToModify = self.getPrintByHash(hash)
         if "printHistory" not in printToModify:
-            printToModify['printHistory'] = []
-            
+            printToModify["printHistory"] = []
+
         history = {}
-        history['action'] = action
-        history['note'] = note
-        history['unixTime'] = time.time()
-        
-        printToModify['printHistory'].append(history)
-        
+        history["action"] = action
+        history["note"] = note
+        history["unixTime"] = time.time()
+
+        printToModify["printHistory"].append(history)
+
         printJSON = json.loads(open(self.printDB).read())
-        
+
         for key, item in enumerate(printJSON):
-            if item['hash'] == printToModify['hash']:
+            if item["hash"] == printToModify["hash"]:
                 printJSON[key] = printToModify
-    
+
         with open(self.printDB, "w") as x:
             x.write(json.dumps(printJSON))
-        
-   
-        
