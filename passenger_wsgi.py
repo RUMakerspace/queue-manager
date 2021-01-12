@@ -45,7 +45,6 @@ users = json.loads(open("userdb.json").read())
 class User(flask_login.UserMixin):
     pass
 
-
 @application.before_request
 def before_request():
     flask.session.permanent = True
@@ -139,23 +138,22 @@ def loginHelper():
     #We return whether there is a finished
     # tag inside the history, and return False
     # , to mean it *has* finished, if it has.
+	
+#XXX REFACTOR HAS / HASN'T FINISHED LIST
 def hasUnfinished(item):
-    if 'printHistory' not in item:
-        return True
     for k in item['printHistory']:
         if k['action'] == "finished":
             return False
     return True
     
 def hasFinished(item):
-    if 'printHistory' not in item:
-        return False
     for k in item['printHistory']:
         if k['action'] == "finished":
             return True
     return False
-    
+
 @application.route("/")
+@login_required
 def indexPage():
     prints = db.getPrints(-1)
     prints = filter(hasUnfinished, prints)

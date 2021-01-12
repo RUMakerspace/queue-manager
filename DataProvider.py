@@ -54,14 +54,21 @@ class DataProvider:
             printJSON = self.sortDB(dbE[1])
             
         printData["unixTime"] = time.time()
+        
+        history = {}
+        history["action"] = "submitted"
+        history["note"] = ""
+        history["unixTime"] = printData["unixTime"]
+        
         if "printHistory" not in printData:
-            printData["printHistory"] = []
+            printData["printHistory"] = [history]
 
         printData["hash"] = str(
             hashlib.md5(str.encode(str(printData))).hexdigest()
         )  # This allows us to uniquely address each item, and the time difference ensures different times of the same contents get different prints.
 
         printJSON.append(printData)
+
 
         with open(self.printDB, "w") as x:
             x.write(json.dumps(printJSON))
