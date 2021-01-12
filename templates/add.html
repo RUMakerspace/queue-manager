@@ -95,24 +95,6 @@ Jobs Info
 
 </form>
 
-<script>
-
-var numSubjobs = 1;
-
-var templateItem = document.getElementById("subjobs").children[0].innerHTML;
-
-function addSubjob() {
-numSubjobs+=1;
-var templateItemTemp = templateItem.replace(new RegExp('1', 'g'), numSubjobs);
-
-
-//this function is responsible for removing the first item that's hidden once it loads b/c otherwise the required boxes are problematic.
-document.getElementById("subjobs").innerHTML+=(templateItemTemp);
-if (numSubjobs > 0) {
-document.getElementById("subjobs").children[0].outerHTML="";
-}
-}
-</script>
 {% endblock %}
 
 

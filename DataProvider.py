@@ -52,8 +52,11 @@ class DataProvider:
         dbE = self.dbExists(True)
         if dbE[0]:
             printJSON = self.sortDB(dbE[1])
-
+            
         printData["unixTime"] = time.time()
+        if "printHistory" not in printData:
+            printData["printHistory"] = []
+
         printData["hash"] = str(
             hashlib.md5(str.encode(str(printData))).hexdigest()
         )  # This allows us to uniquely address each item, and the time difference ensures different times of the same contents get different prints.
@@ -65,13 +68,24 @@ class DataProvider:
 
     # Returns the contents of a print info dump
     # only by the hash.
-    def getPrintByHash(self, hash):
+    
+    def editPrint(self, hash, item):
+        dbItems = self.getPrints(-1)
+        
+        for k,v in enumerate(dbItems):
+            if v['hash'] == hash:
+                dbItems[k] = item
+                
+        with open(self.printDB, "w") as x:
+            x.write(json.dumps(dbItems))
 
+    def getPrintByHash(self, hash):
         printJSON = self.getPrints(-1)
-        return list(filter(lambda x: x["hash"] == hash, printJSON))[0]
-        # for x in printJSON:
-        #    if x["hash"] == hash:
-        #        return x
+        printJSON = list(filter(lambda x: x["hash"] == hash, printJSON))
+        if len(printJSON) != 0:
+            return printJSON[0]
+        else:
+            return None
 
     # This function finds a print in-line
     # the JSON store by hash, if there is

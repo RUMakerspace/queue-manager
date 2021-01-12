@@ -146,7 +146,7 @@ def hasUnfinished(item):
         if k['action'] == "finished":
             return False
     return True
-	
+    
 def hasFinished(item):
     if 'printHistory' not in item:
         return False
@@ -154,7 +154,7 @@ def hasFinished(item):
         if k['action'] == "finished":
             return True
     return False
-	
+    
 @application.route("/")
 def indexPage():
     prints = db.getPrints(-1)
@@ -223,9 +223,20 @@ def changePrintStatus(hash, action):
     return redirect(url_for("indexPage"))
 
 
-@application.route("/edit/<hash>")
+@application.route("/edit/<hash>",methods=["GET",'POST'])
 def editPrint(hash):
-    return render_template("edit.html", actions=db.getPrintByHash(hash)["printHistory"])
+    if request.method == "POST":
+        dbItem = db.getPrintByHash(hash)
+        item = request.form.to_dict()
+        item['hash'] = hash
+        item['printHistory'] = dbItem['printHistory']
+        item['unixTime'] = dbItem['unixTime']
+        db.editPrint(hash, item)
+        db.addPrintLog(hash, "edited","")
+        return redirect(url_for("indexPage"))
+    if request.method == "GET":
+        printjob = db.getPrintByHash(hash)
+        return render_template("edit.html", actions=printjob["printHistory"], printjob=printjob)
 
 
 @application.route("/addbulk", methods=["GET", "POST"])
