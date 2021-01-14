@@ -45,6 +45,7 @@ users = json.loads(open("userdb.json").read())
 class User(flask_login.UserMixin):
     pass
 
+
 @application.before_request
 def before_request():
     flask.session.permanent = True
@@ -134,30 +135,34 @@ def loginHelper():
         return render_template("pw.html")
     # print(request.values)
     return redirect(url_for("index"))
-    
-    #We return whether there is a finished
+
+    # We return whether there is a finished
     # tag inside the history, and return False
     # , to mean it *has* finished, if it has.
-	
-#XXX REFACTOR HAS / HASN'T FINISHED LIST
+
+
+# XXX REFACTOR HAS / HASN'T FINISHED LIST
 def hasUnfinished(item):
-    for k in item['printHistory']:
-        if k['action'] == "finished":
+    for k in item["printHistory"]:
+        if k["action"] == "finished":
             return False
     return True
-    
+
+
 def hasFinished(item):
-    for k in item['printHistory']:
-        if k['action'] == "finished":
+    for k in item["printHistory"]:
+        if k["action"] == "finished":
             return True
     return False
+
 
 @application.route("/")
 @login_required
 def indexPage():
     prints = db.getPrints(-1)
-    prints = filter(hasUnfinished, prints)
+    prints = list(filter(hasUnfinished, prints))
     return render_template("main.html", prints=prints)
+
 
 @application.route("/finished")
 def finishedPage():
@@ -183,87 +188,29 @@ def managePrint(hash):
     return jsonify(db.getPrintByHash(hash))
 
 
-def hasSubprints(request):
-    # This function takes in a request and knowing the format
-    # of the POST we can break it apart.
-    # The first half is for getting the number of subprints in the bulk post and whether we have them or not.
-    hasSubjobs = False
-    numSubjobs = 0
-    derivedKeys = request.keys()
-    for key in derivedKeys:
-        if "subjob" in key:
-            hasSubjobs = True
-            if int(key.split("_")[2]) > numSubjobs:
-                numSubjobs = int(key.split("_")[2])
-
-    # the sectiond portion specifically breaks apart the flat structure
-    # into a list of subjob keys we can easily iterate over and replace
-    # components of the parent job with.
-    subjobCollected = {}
-
-    for key in derivedKeys:
-        if "subjob" in key:
-            index = int(key.split("_")[2])
-            if index not in subjobCollected:
-                subjobCollected[
-                    index
-                ] = {}  # if the subjob number isn't in the temporary list, we add it.
-            subjobCollected[index][key] = request[
-                key
-            ]  # request as added back in is just the k/v as a dict.
-
-    return [hasSubjobs, numSubjobs, subjobCollected]
-
-
-@application.route("/manage/<hash>/<action>")
+@application.route("/manage/<hash>/<action>", methods=["GET", "POST"])
 def changePrintStatus(hash, action):
-    db.addPrintLog(hash, action, "")
+    if request.method == "GET":
+        db.addPrintLog(hash, action, "")
+    elif request.method == "POST":
+        data = request.form.to_dict()["note"]
+        db.addPrintLog(hash, action, data)
     return redirect(url_for("indexPage"))
 
 
-@application.route("/edit/<hash>",methods=["GET",'POST'])
+@application.route("/edit/<hash>", methods=["GET", "POST"])
 def editPrint(hash):
     if request.method == "POST":
         dbItem = db.getPrintByHash(hash)
         item = request.form.to_dict()
-        item['hash'] = hash
-        item['printHistory'] = dbItem['printHistory']
-        item['unixTime'] = dbItem['unixTime']
+        item["hash"] = hash
+        item["printHistory"] = dbItem["printHistory"]
+        item["unixTime"] = dbItem["unixTime"]
         db.editPrint(hash, item)
-        db.addPrintLog(hash, "edited","")
+        db.addPrintLog(hash, "edited", "")
         return redirect(url_for("indexPage"))
     if request.method == "GET":
         printjob = db.getPrintByHash(hash)
-        return render_template("edit.html", actions=printjob["printHistory"], printjob=printjob)
-
-
-@application.route("/addbulk", methods=["GET", "POST"])
-def addBulkPage():
-    if request.method == "POST":
-        tempData = request.form.to_dict()
-        hasSubjobs, numSubjobs, sj = hasSubprints(request.form.to_dict())
-        if numSubjobs > 0:
-            # make a temp request, clear out any subjob keys
-            # then append the keys as a subdict, then iterate to add them.
-            import copy
-
-            placeholderReq = copy.deepcopy(request.form.to_dict())
-            placeholderReq['printHistory'] = []
-            placeholderKeys = placeholderReq.keys()
-            for x in list(placeholderKeys):
-                if "subjob" in x:
-                    placeholderReq.pop(x, None)
-
-            # we use placeholdereq here so the parent job doesn't contain all subjobs as well.
-            db.addPrint(placeholderReq)
-
-            for subjob in sj.keys():
-                temp = placeholderReq
-                temp["parentJobName"] = sj[subjob][str("subjob_name_" + str(subjob))]
-                temp["parentNotesBox"] = sj[subjob][str("subjob_notes_" + str(subjob))]
-                temp["printTime"] = sj[subjob][str("subjob_printtime_" + str(subjob))]
-                temp["location"] = sj[subjob][str("subjob_location_" + str(subjob))]
-
-                db.addPrint(temp)
-        redirect(url_for("indexPage"))
-    return render_template("addbulk.html")
+        return render_template(
+            "edit.html", actions=printjob["printHistory"], printjob=printjob
+        )

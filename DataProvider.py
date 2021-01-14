@@ -52,14 +52,14 @@ class DataProvider:
         dbE = self.dbExists(True)
         if dbE[0]:
             printJSON = self.sortDB(dbE[1])
-            
+
         printData["unixTime"] = time.time()
-        
+
         history = {}
         history["action"] = "submitted"
         history["note"] = ""
         history["unixTime"] = printData["unixTime"]
-        
+
         if "printHistory" not in printData:
             printData["printHistory"] = [history]
 
@@ -69,20 +69,19 @@ class DataProvider:
 
         printJSON.append(printData)
 
-
         with open(self.printDB, "w") as x:
             x.write(json.dumps(printJSON))
 
     # Returns the contents of a print info dump
     # only by the hash.
-    
+
     def editPrint(self, hash, item):
         dbItems = self.getPrints(-1)
-        
-        for k,v in enumerate(dbItems):
-            if v['hash'] == hash:
+
+        for k, v in enumerate(dbItems):
+            if v["hash"] == hash:
                 dbItems[k] = item
-                
+
         with open(self.printDB, "w") as x:
             x.write(json.dumps(dbItems))
 
