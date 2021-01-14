@@ -24,8 +24,10 @@ login_manager.init_app(application)
 
 users = json.loads(open("userdb.json").read())
 
+
 class User(flask_login.UserMixin):
     pass
+
 
 # This function is just to set a session timer.
 @application.before_request
@@ -59,6 +61,7 @@ def request_loader(request):
     user.is_authenticated = request.form["password"] == users[email]["password"]
     return user
 
+
 @application.route("/login", methods=["GET", "POST"])
 def login():
     # Here we use a class of some kind to represent and validate our
@@ -77,33 +80,29 @@ def login():
                 user = User()
                 user.id = email
                 login_user(user)
-                flask.redirect(url_for('indexPage'))
+                flask.redirect(url_for("indexPage"))
 
         except:
             flask.redirect(url_for("logout"))
         return flask.redirect(flask.url_for("indexPage"))
 
+
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    return flask.redirect(url_for('login'))
-	
-@application.route('/protected')
+    return flask.redirect(url_for("login"))
+
+
+@application.route("/protected")
 @flask_login.login_required
 def protected():
-    return 'Logged in as: ' + flask_login.current_user.id
-    
-	
+    return "Logged in as: " + flask_login.current_user.id
+
+
 @application.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("indexPage"))
-	
-	
-	
-	
-	
-	
 
 
 # XXX REFACTOR HAS / HASN'T FINISHED LIST
@@ -120,6 +119,7 @@ def hasFinished(item):
             return True
     return False
 
+
 @login_required
 @application.route("/")
 def indexPage():
@@ -134,6 +134,7 @@ def finishedPage():
     prints = [x for x in prints if hasFinished(x)]
     return render_template("main.html", prints=prints, finished=True)
 
+
 @application.route("/add", methods=["GET", "POST"])
 @login_required
 def addPage():
@@ -141,8 +142,8 @@ def addPage():
         db.addPrint(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
-	
-	
+
+
 @application.route("/manage/<hash>/<action>", methods=["GET", "POST"])
 @login_required
 def changePrintStatus(hash, action):
@@ -152,6 +153,7 @@ def changePrintStatus(hash, action):
         data = request.form.to_dict()["note"]
         db.addPrintLog(hash, action, data)
     return redirect(url_for("indexPage"))
+
 
 @application.route("/edit/<hash>", methods=["GET", "POST"])
 @login_required
