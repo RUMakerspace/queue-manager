@@ -3,23 +3,6 @@ import requests
 import json
 import datetime
 
-### TODO LIST
-# Clean up logic for bulk prints.
-# have a key renamer group that doesn't suck?
-# Edit page for prints.
-# Print status change log?
-# Dashboard for TV?
-# IPO dropdown
-if sys.version < "2.4":
-    os.execl("/usr/bin/python3.6", "python3.6", *sys.argv)
-
-# Change before deploy.
-try:
-    with open("debug_run.py") as w:
-        debug = True
-except:
-    debug = False
-
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
 
@@ -41,11 +24,10 @@ login_manager.init_app(application)
 
 users = json.loads(open("userdb.json").read())
 
-
 class User(flask_login.UserMixin):
     pass
 
-
+# This function is just to set a session timer.
 @application.before_request
 def before_request():
     flask.session.permanent = True
@@ -54,12 +36,12 @@ def before_request():
 
 
 @login_manager.user_loader
-def user_loader(email):
-    if email not in users:
+def user_loader(username):
+    if username not in users:
         return
 
     user = User()
-    user.id = email
+    user.id = username
     return user
 
 
@@ -75,9 +57,7 @@ def request_loader(request):
     # DO NOT ever store passwords in plaintext and always compare password
     # hashes using constant-time comparison!
     user.is_authenticated = request.form["password"] == users[email]["password"]
-
     return user
-
 
 @application.route("/login", methods=["GET", "POST"])
 def login():
@@ -97,48 +77,33 @@ def login():
                 user = User()
                 user.id = email
                 login_user(user)
+                flask.redirect(url_for('indexPage'))
 
         except:
             flask.redirect(url_for("logout"))
-        # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
-
         return flask.redirect(flask.url_for("indexPage"))
 
-
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return flask.redirect(url_for('login'))
+	
+@application.route('/protected')
+@flask_login.login_required
+def protected():
+    return 'Logged in as: ' + flask_login.current_user.id
+    
+	
 @application.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("index"))
-
-
-@login_manager.user_loader
-def user_loader(email):
-    if email not in users:
-        return
-
-    user = User()
-    user.id = email
-    return user
-
-
-@application.route("/login", methods=["POST", "GET"])
-def loginHelper():
-    if request.method == "POST":
-        passphrase = request.form["passphrase"]
-        if passphrase in passwords2:
-            id = passphrase
-            user = User()
-            login_user(user)
-    if request.method == "GET":
-        return render_template("pw.html")
-    # print(request.values)
-    return redirect(url_for("index"))
-
-    # We return whether there is a finished
-    # tag inside the history, and return False
-    # , to mean it *has* finished, if it has.
+    return redirect(url_for("indexPage"))
+	
+	
+	
+	
+	
+	
 
 
 # XXX REFACTOR HAS / HASN'T FINISHED LIST
@@ -155,9 +120,8 @@ def hasFinished(item):
             return True
     return False
 
-
-@application.route("/")
 @login_required
+@application.route("/")
 def indexPage():
     prints = db.getPrints(-1)
     prints = list(filter(hasNotFinished, prints))
@@ -170,25 +134,17 @@ def finishedPage():
     prints = [x for x in prints if hasFinished(x)]
     return render_template("main.html", prints=prints, finished=True)
 
-
 @application.route("/add", methods=["GET", "POST"])
+@login_required
 def addPage():
     if request.method == "POST":
         db.addPrint(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
-
-
-# XXX TODO
-# Implement this page's logic.
-@application.route("/manage/<hash>", methods=["GET", "POST"])
-def managePrint(hash):
-    if request.method == "POST":
-        print("Post bois")
-    return jsonify(db.getPrintByHash(hash))
-
-
+	
+	
 @application.route("/manage/<hash>/<action>", methods=["GET", "POST"])
+@login_required
 def changePrintStatus(hash, action):
     if request.method == "GET":
         db.addPrintLog(hash, action, "")
@@ -197,8 +153,8 @@ def changePrintStatus(hash, action):
         db.addPrintLog(hash, action, data)
     return redirect(url_for("indexPage"))
 
-
 @application.route("/edit/<hash>", methods=["GET", "POST"])
+@login_required
 def editPrint(hash):
     if request.method == "POST":
         dbItem = db.getPrintByHash(hash)
