@@ -142,7 +142,7 @@ def loginHelper():
 
 
 # XXX REFACTOR HAS / HASN'T FINISHED LIST
-def hasUnfinished(item):
+def hasNotFinished(item):
     for k in item["printHistory"]:
         if k["action"] == "finished":
             return False
@@ -160,14 +160,14 @@ def hasFinished(item):
 @login_required
 def indexPage():
     prints = db.getPrints(-1)
-    prints = list(filter(hasUnfinished, prints))
+    prints = list(filter(hasNotFinished, prints))
     return render_template("main.html", prints=prints)
 
 
 @application.route("/finished")
 def finishedPage():
     prints = db.getPrints(-1)
-    prints = filter(hasFinished, prints)
+    prints = [x for x in prints if hasFinished(x)]
     return render_template("main.html", prints=prints, finished=True)
 
 
