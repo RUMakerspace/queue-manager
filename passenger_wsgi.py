@@ -1,5 +1,4 @@
 import sys, os
-import requests
 import json
 import datetime
 
@@ -154,9 +153,13 @@ def changePrintStatus(hash, action):
         db.addPrintLog(hash, action, data)
     return redirect(url_for("indexPage"))
 
+@application.route("/manage/<hash>")
+def managePrint(hash):
+    return jsonify(db.getPrintByHash(hash))
 
-@application.route("/edit/<hash>", methods=["GET", "POST"])
 @login_required
+@application.route("/edit/<hash>", methods=["GET", "POST"])
+
 def editPrint(hash):
     if request.method == "POST":
         dbItem = db.getPrintByHash(hash)
