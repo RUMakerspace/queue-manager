@@ -1,101 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
 <form class="needs-validation" novalidate style="width:100%;" method="POST">
-<div class="row mt-3">
-<div class="bs-component">
-<h3>
-Jobs Info
-</h3>
-</div>
-</div>
-<div class="row mt-3">
-<div class="col-lg-6">
-<div class="form-group">
-    <label for="jobName">Job Name</label>
-    <input type="text" class="form-control" name="parentJobName" id="jobName" placeholder="Like 'Mission D.I.C.E. Keychains'" required>
-  </div>
-  
-  <div class="form-group">
-    <label for="netID">netID</label>
-    <input type="text" class="form-control" name="netID" id="netID" required>
-  </div>
-  
-  <div class="form-group">
-                    <label for="notesBox">Notes</label>
-                    <textarea class="form-control" name = "parentNotesBox" id="notesBox" rows="5"></textarea>
-                  </div>
-</div>
-
-<div class="col-lg-6">
-<div class="form-group">
-<label for="parent_loc" >File Location</label>
-                    <select class="form-control form-control-sm" name="location" id="parent_loc" required>
-					<option value="">Please select one.</option>
-                      <option value="email">Email</option>
-                      <option value="thaw">Thawspace</option>
-                      <option value="teams">MS Teams</option>
-                      <option value="other">Other (use notes)</option>
-                    </select>
-					</div>
-<div class="form-group">
-				  <div class="input-group mb-3">
-  <div class="input-group-prepend">
-      <div class="input-group-text">
-      Is paid?
-    </div>
-    <div class="input-group-text">
-      <input type="checkbox" aria-label="Checkbox for following text input" id="isPaidCheckbox" name="isPaidCheckbox">
+  <div class="row mt-3">
+    <div class="bs-component">
+      <h3>
+        Jobs Info
+      </h3>
     </div>
   </div>
-  <input type="text" class="form-control" aria-label="Text input with checkbox" placeholder="How?" name="isPaidNotes">
-</div>
+  <div class="row mt-3">
+    <div class="col-lg-6">
+      <div class="form-group">
+        <label for="jobName">Job Name</label>
+        <input type="text" class="form-control" name="parentJobName" id="jobName"
+          placeholder="Like 'Mission D.I.C.E. Keychains'" required>
+      </div>
 
-				  <div class="input-group mb-3">
-  <div class="input-group-prepend">
-      <div class="input-group-text">
-     Is an IPO?
+      <div class="form-group">
+        <label for="netID">netID</label>
+        <input type="text" class="form-control" name="netID" id="netID" required>
+      </div>
+
+      <div class="form-group">
+        <label for="notesBox">Notes</label>
+        <textarea class="form-control" name="parentNotesBox" id="notesBox" rows="5"></textarea>
+      </div>
     </div>
-    <div class="input-group-text">
-      <input type="checkbox" aria-label="Checkbox for following text input" id="isIPOCheckbox" name="isIPOCheckbox">
+
+    <div class="col-lg-6">
+      <div class="form-group">
+        <label for="parent_loc">File Location</label>
+        <select class="form-control form-control-sm" name="location" id="parent_loc" required>
+          <option value="">Please select one.</option>
+          <option value="email">Email</option>
+          <option value="thaw">Thawspace</option>
+          <option value="teams">MS Teams</option>
+          <option value="other">Other (use notes)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <div class="input-group-text">
+              Is paid?
+            </div>
+            <div class="input-group-text">
+              <input type="checkbox" aria-label="Checkbox for following text input" id="isPaidCheckbox"
+                name="isPaidCheckbox">
+            </div>
+          </div>
+          <input type="text" class="form-control" aria-label="Text input with checkbox" placeholder="How?"
+            name="isPaidNotes">
+        </div>
+
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <div class="input-group-text">
+              Is an IPO?
+            </div>
+            <div class="input-group-text">
+              <input type="checkbox" aria-label="Checkbox for following text input" id="isIPOCheckbox"
+                name="isIPOCheckbox">
+            </div>
+          </div>
+          <input type="number" class="form-control" aria-label="Text input with checkbox" placeholder="IPO #"
+            name="isIPONotes">
+        </div>
+
+
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <div class="input-group-text">
+              On printer?
+            </div>
+            <div class="input-group-text">
+              <input type="checkbox" aria-label="Checkbox for following text input" id="onPrinterCheckbox"
+                name="onPrinterCheckbox">
+            </div>
+          </div>
+          <input type="text" class="form-control" aria-label="Text input with checkbox" placeholder="Which one?"
+            name="onPrinterNotes">
+        </div>
+
+        <div class="form-group">
+          <label for="printTime">Print Duration</label>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <div class="input-group-text">D</div>
+            </div>
+            <input type="number" class="form-control" aria-label="Text input" placeholder="Days" name="tDays" required>
+            <div class="input-group-prepend">
+              <div class="input-group-text">H</div>
+            </div>
+            <input type="number" class="form-control" aria-label="Text input" placeholder="Hours" name="tHours" required>
+            <div class="input-group-prepend">
+              <div class="input-group-text">M</div>
+            </div>
+            <input type="number" class="form-control" aria-label="Text input" placeholder="Minutes" name="tMinutes" required>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <input type="number" class="form-control" aria-label="Text input with checkbox" placeholder="IPO #" name="isIPONotes">
-</div>
-				  
-				  
-				  <div class="input-group mb-3">
-  <div class="input-group-prepend">
-      <div class="input-group-text">
-      On printer?
+
+
+  <div class="row mt-3">
+    <div class="col-lg-12">
+      <button class="btn btn-primary" type="submit">Submit Print</button>
     </div>
-    <div class="input-group-text">
-      <input type="checkbox" aria-label="Checkbox for following text input" id="onPrinterCheckbox" name="onPrinterCheckbox">
-    </div>
+
   </div>
-  <input type="text" class="form-control" aria-label="Text input with checkbox" placeholder="Which one?" name="onPrinterNotes">
-</div>
-
-<div class="form-group">
-    <label for="printTime">Print Duration</label>
-    <input type="text" class="form-control" name="printTime" id="printTime" placeholder = "Like '3h12m42s'" required>
-  </div>
-
-              
-</div>
-</div>
-</div>
-
-
-<div class="row mt-3">
-<div class="col-lg-12">
-<button class="btn btn-primary" type="submit">Submit Print</button>
-</div>
-
-</div>
 
 </form>
 
 {% endblock %}
-
-
-
