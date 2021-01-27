@@ -2,7 +2,6 @@ import json
 import time
 import hashlib
 
-
 class DataProvider:
     def __init__(self):
         self.printDB = "prints.json"
@@ -10,7 +9,7 @@ class DataProvider:
     # This function tests whether the database exists or not.
     # If it does, it loads and sends it to the function caller.
     # If not, it makes a empty one via makePrintDB().
-    def dbExists(self, debug=False):
+    def dbExists(self, debug=True):
         try:
             printJSON = json.loads(open(self.printDB).read())
             if debug:
@@ -19,7 +18,7 @@ class DataProvider:
         except:
             if debug:
                 print("Doesn't exist, making now.")
-            makePrintDB()
+            self.makePrintDB()
             if debug:
                 print("DB made.")
             printJSON = json.loads(open(self.printDB).read())
