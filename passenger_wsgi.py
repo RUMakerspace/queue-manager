@@ -2,31 +2,35 @@ import sys, os
 import json
 import datetime
 
+# TinyDB
+from tinydb import TinyDB, where
+
+# Flask
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
+
+# Flask Login
+import flask_login
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+
+# TODO: Phase out DataProvider, functions are provided by TinyDB
+from DataProvider import DataProvider
+from pprint import pprint
 
 application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
 # Our database layer.
-from DataProvider import DataProvider
-from pprint import pprint
-
+printdb = TinyDB('./db/print.json') 
+userdb = TinyDB('./db/user.json') 
 db = DataProvider()
 
 ### LOGIN SHIT
-import flask_login
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
-
 login_manager = flask_login.LoginManager()
 login_manager.init_app(application)
 
-users = json.loads(open("userdb.json").read())
-
-
 class User(flask_login.UserMixin):
     pass
-
 
 # This function is just to set a session timer.
 @application.before_request
