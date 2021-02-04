@@ -1,6 +1,7 @@
 import sys, os
 import json
 import datetime
+import re
 
 # TinyDB
 from tinydb import TinyDB, where
@@ -23,6 +24,9 @@ application.secret_key = open("supersecret.key").read()
 # Our database layer.
 printdb = TinyDB('./db/print.json') 
 userdb = TinyDB('./db/user.json') 
+
+userdb.upsert({'name': 'Rutgers', 'password': 'Makerspace', 'logged-in': True}, where('name') == 'Rutgers')
+
 db = DataProvider()
 
 ### LOGIN SHIT
@@ -42,7 +46,7 @@ def before_request():
 
 @login_manager.user_loader
 def user_loader(username):
-    if username not in users:
+    if not userdb.search(where('name').matches(username, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -53,7 +57,7 @@ def user_loader(username):
 @login_manager.request_loader
 def request_loader(request):
     email = request.form.get("email")
-    if email not in users:
+    if not userdb.search(where('email').matches(email, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -61,7 +65,9 @@ def request_loader(request):
 
     # DO NOT ever store passwords in plaintext and always compare password
     # hashes using constant-time comparison!
-    user.is_authenticated = request.form["password"] == users[email]["password"]
+    pw = request.form['password']
+    user.is_authenticated = userdb.search((where('email') == email) & (where('password') == pw))
+    # user.is_authenticated = request.form["password"] == users[email]["password"]
     return user
 
 
@@ -77,9 +83,12 @@ def login():
         # user should be an instance of your `User` class
         if "email" not in flask.request.form:
             flask.redirect(flask.url_for("indexPage"))
+
         email = flask.request.form["email"]
+
         try:
-            if flask.request.form["password"] == users[email]["password"]:
+            pw = flask.request.form["password"]
+            if userdb.search((where('name') == email) & (where('password') == pw)):
                 user = User()
                 user.id = email
                 login_user(user)
