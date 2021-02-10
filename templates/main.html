@@ -12,31 +12,31 @@
 <!-- Dialog modals for Failed Print menu -->
 <div class="bs-element">
 <!-- Modal -->
-<div class="modal fade" id="modal-{{print.hash}}" tabindex="-1" role="dialog" aria-labelledby="modalLabel-{{print.hash}}" aria-hidden="true">
+<div class="modal fade" id="modal-{{print.id}}" tabindex="-1" role="dialog" aria-labelledby="modalLabel-{{print.id}}" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modal-{{print.hash}}">Print Failed - Additional Information</h5>
+        <h5 class="modal-title" id="modal-{{print.id}}">Print Failed - Additional Information</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-                    <textarea class="form-control" name = "modal-notes-{{print.hash}}" id="modal-notes-{{print.hash}}" rows="5"></textarea>
+                    <textarea class="form-control" name = "modal-notes-{{print.id}}" id="modal-notes-{{print.id}}" rows="5"></textarea>
      </div>
       <div class="modal-footer">
-        <button type="button submitfailbutton" id="btn-submit-{{print.hash}}" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button submitfailbutton" id="btn-submit-{{print.id}}" class="btn btn-secondary" data-dismiss="modal">Close</button>
 		<script>
-       function modal_submit_{{print.hash}}() {
+       function modal_submit_{{print.id}}() {
     $.ajax
     ({ 
-        url: 'manage/{{print.hash}}/failed',
-        data: {"note":document.getElementById("modal-notes-{{print.hash}}").value},
+        url: 'manage/{{print.id}}/failed',
+        data: {"note":document.getElementById("modal-notes-{{print.id}}").value},
         type: 'post'
     });
 }
 </script>
-        <button type="button" class="btn btn-primary" onclick="modal_submit_{{print.hash}}()" data-dismiss="modal">Submit</button>
+        <button type="button" class="btn btn-primary" onclick="modal_submit_{{print.id}}()" data-dismiss="modal">Submit</button>
       </div>
     </div>
   </div>
@@ -70,15 +70,15 @@
 						{{print.parentJobName}}
 					</button>
     <div class="dropdown-menu">
-      <a class="dropdown-item" href="manage/{{print.hash}}">💻Debug Metadata</a>
+      <a class="dropdown-item" href="manage/{{print.id}}">💻Debug Metadata</a>
 	  <div class="dropdown-divider"></div>
 	  <a class="dropdown-item disabled" href="#">mark as:</a>
-      <a class="dropdown-item" href="manage/{{print.hash}}/started">🖨️Started</a>
-	  <a class="dropdown-item" href="manage/{{print.hash}}/finished">💹Finished</a>
-      <a class="dropdown-item" data-toggle="modal" href="#modal-{{print.hash}}">❌Failed</a>
-	  <a class="dropdown-item" href="manage/{{print.hash}}/delivered">📮Delivered</a>
+      <a class="dropdown-item" href="manage/{{print.id}}/started">🖨️Started</a>
+	  <a class="dropdown-item" href="manage/{{print.id}}/finished">💹Finished</a>
+      <a class="dropdown-item" data-toggle="modal" href="#modal-{{print.id}}">❌Failed</a>
+	  <a class="dropdown-item" href="manage/{{print.id}}/delivered">📮Delivered</a>
       <div class="dropdown-divider"></div>
-	  <a class="dropdown-item" disabled href="/edit/{{print.hash}}">📝Edit Print</a>
+	  <a class="dropdown-item" disabled href="/edit/{{print.id}}">📝Edit Print</a>
 	  	  	  <div class="dropdown-divider"></div>
     </div>
   </div>

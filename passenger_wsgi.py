@@ -3,7 +3,8 @@ import json
 import datetime
 import re
 
-# TinyDB
+# Print Databases
+from queue import Queue
 from tinydb import TinyDB, where
 
 # Flask
@@ -22,7 +23,7 @@ application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
 # Our database layer.
-printdb = TinyDB('./db/print.json') 
+queue = Queue('./db/print.json') 
 userdb = TinyDB('./db/user.json') 
 
 userdb.upsert({'name': 'Rutgers', 'password': 'Makerspace', 'logged-in': True}, where('name') == 'Rutgers')
@@ -135,56 +136,57 @@ def hasFinished(item):
 @login_required
 @application.route("/")
 def indexPage():
-    prints = db.getPrints(-1)
-    prints = list(filter(hasNotFinished, prints))
+    # TODO: Query
+    prints = queue.get_n(20)
+    # prints = list(filter(hasNotFinished, prints))
     return render_template("main.html", prints=prints)
 
 
 @application.route("/finished")
 def finishedPage():
-    prints = db.getPrints(-1)
-    prints = [x for x in prints if hasFinished(x)]
+    # TODO: Query
+    prints = queue.get_n(20)
+    # prints = [x for x in prints if hasFinished(x)]
     return render_template("main.html", prints=prints, finished=True)
 
 
 @application.route("/add", methods=["GET", "POST"])
 @login_required
 def addPage():
+    # TODO: Fix?
     if request.method == "POST":
-        db.addPrint(request.form.to_dict())
+        queue.add(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
 
 
-@application.route("/manage/<hash>/<action>", methods=["GET", "POST"])
+@application.route("/manage/<id>/<action>", methods=["GET", "POST"])
 @login_required
-def changePrintStatus(hash, action):
+def changePrintStatus(id, action):
     if request.method == "GET":
-        db.addPrintLog(hash, action, "")
+        db.addPrintLog(id, action, "")
     elif request.method == "POST":
         data = request.form.to_dict()["note"]
-        db.addPrintLog(hash, action, data)
+        db.addPrintLog(id, action, data)
     return redirect(url_for("indexPage"))
 
-@application.route("/manage/<hash>")
-def managePrint(hash):
-    return jsonify(db.getPrintByHash(hash))
+@application.route("/manage/<id>")
+def managePrint(id):
+    return queue.get(id)
 
 @login_required
-@application.route("/edit/<hash>", methods=["GET", "POST"])
-
-def editPrint(hash):
+@application.route("/edit/<id>", methods=["GET", "POST"])
+def editPrint(id):
+    id = int(id)
     if request.method == "POST":
-        dbItem = db.getPrintByHash(hash)
+        job = queue.get(id)
         item = request.form.to_dict()
-        item["hash"] = hash
-        item["printHistory"] = dbItem["printHistory"]
-        item["unixTime"] = dbItem["unixTime"]
-        db.editPrint(hash, item)
-        db.addPrintLog(hash, "edited", "")
+        item["hash"] = id
+        item["printHistory"] = job["printHistory"]
+        queue.edit(id, item)
         return redirect(url_for("indexPage"))
     if request.method == "GET":
-        printjob = db.getPrintByHash(hash)
+        job = queue.get(id)
         return render_template(
-            "edit.html", actions=printjob["printHistory"], printjob=printjob
+            "edit.html", actions=job["printHistory"], printjob=job
         )
