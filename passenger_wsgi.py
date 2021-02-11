@@ -164,10 +164,10 @@ def addPage():
 @login_required
 def changePrintStatus(id, action):
     if request.method == "GET":
-        db.addPrintLog(id, action, "")
+        queue.log(id, action, "")
     elif request.method == "POST":
         data = request.form.to_dict()["note"]
-        db.addPrintLog(id, action, data)
+        queue.log(id, action, data)
     return redirect(url_for("indexPage"))
 
 @application.route("/manage/<id>")
@@ -179,12 +179,11 @@ def managePrint(id):
 def editPrint(id):
     id = int(id)
     if request.method == "POST":
-        job = queue.get_print(id)
         item = request.form.to_dict()
-        item["hash"] = id
         queue.edit_print(id, item)
         return redirect(url_for("indexPage"))
     if request.method == "GET":
         job = queue.get_print(id)
         log = queue.get_log(id)
+
         return render_template("edit.html", actions=log, printjob=job)

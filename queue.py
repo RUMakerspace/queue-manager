@@ -19,9 +19,8 @@ class Queue():
     # Adds the info to the database
     def add_print(self, info):
         idx = self.__PRINTS.insert(info)
-        self.__PRINTS.update(set("printHistory", []), doc_ids=[idx])
-        self.__PRINTS.update(set("id", idx - 1), doc_ids=[idx])
-        self.__log(idx, "add", "") 
+        self.__PRINTS.update(set("id", idx), doc_ids=[idx])
+        self.log(idx, "add", "") 
 
     # Remove the specified print
     def remove_print(self, idx):
@@ -29,16 +28,19 @@ class Queue():
 
     # Gets the specified print by id
     def get_print(self, idx):
-        return self.__PRINTS.all()[idx]
+        return self.__PRINTS.search(self.__QUERY['id'] == idx)[0]
 
     # Gets the first n prints given a query
-    def get_prints(self, n, query=None):
+    def get_prints(self, n=0, query=None):
         prints = self.__PRINTS.all()
 
         if query:
             prints = self.__PRINTS.search(query)
 
-        return self.__PRINTS.all()[:n]
+        if n > 0:
+            prints = prints[:n]
+
+        return prints
 
     def get_log(self, idx):
         return self.__LOG.search(self.__QUERY['id'] == idx)
@@ -50,9 +52,9 @@ class Queue():
     # Updates the specified print
     def edit_print(self, idx, printInfo):
         self.get_print(idx).update(printInfo, doc_id=idx)
-        self.__log(idx, "edit", "")
+        self.log(idx, "edit", "")
 
     # Logs information, should only be used internally
     # Useful for making log messages consistent
-    def __log(self, idx, action, note):
+    def log(self, idx, action, note):
         self.__LOG.insert({"id": idx, "time": time(), "action": action, "note": note})
