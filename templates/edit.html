@@ -130,7 +130,7 @@
         <td>{{action.action}} {% if action.note != "" %} ({{ action.note }}){% endif %}</td>
         <td>
           <script type="text/javascript">
-            document.write(new Date({{ action.unixTime }}* 1000).toLocaleString())
+            document.write(new Date({{ action.time }}* 1000).toLocaleString())
           </script>
         </td>
       </tr>

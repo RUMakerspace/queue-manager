@@ -137,7 +137,7 @@ def hasFinished(item):
 @application.route("/")
 def indexPage():
     # TODO: Query
-    prints = queue.get_n(20)
+    prints = queue.get_prints(20)
     # prints = list(filter(hasNotFinished, prints))
     return render_template("main.html", prints=prints)
 
@@ -145,7 +145,7 @@ def indexPage():
 @application.route("/finished")
 def finishedPage():
     # TODO: Query
-    prints = queue.get_n(20)
+    prints = queue.get_prints(20)
     # prints = [x for x in prints if hasFinished(x)]
     return render_template("main.html", prints=prints, finished=True)
 
@@ -155,7 +155,7 @@ def finishedPage():
 def addPage():
     # TODO: Fix?
     if request.method == "POST":
-        queue.add(request.form.to_dict())
+        queue.add_print(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
 
@@ -172,21 +172,19 @@ def changePrintStatus(id, action):
 
 @application.route("/manage/<id>")
 def managePrint(id):
-    return queue.get(id)
+    return queue.get_print(id)
 
 @login_required
 @application.route("/edit/<id>", methods=["GET", "POST"])
 def editPrint(id):
     id = int(id)
     if request.method == "POST":
-        job = queue.get(id)
+        job = queue.get_print(id)
         item = request.form.to_dict()
         item["hash"] = id
-        item["printHistory"] = job["printHistory"]
-        queue.edit(id, item)
+        queue.edit_print(id, item)
         return redirect(url_for("indexPage"))
     if request.method == "GET":
-        job = queue.get(id)
-        return render_template(
-            "edit.html", actions=job["printHistory"], printjob=job
-        )
+        job = queue.get_print(id)
+        log = queue.get_log(id)
+        return render_template("edit.html", actions=log, printjob=job)

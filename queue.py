@@ -7,46 +7,52 @@ from time import time
 class Queue():
     __DB = None
     __QUERY = None
+    __PRINTS = None
+    __LOG = None
 
     def __init__(self, path):
         self.__DB = TinyDB(path)
         self.__QUERY = Query()
+        self.__PRINTS = self.__DB.table('queue')
+        self.__LOG = self.__DB.table('log')
 
     # Adds the info to the database
-    def add(self, info):
-        idx = self.__DB.insert(info)
-        self.__DB.update(set("printHistory", []), doc_ids=[idx])
-        self.__DB.update(set("id", idx - 1), doc_ids=[idx])
+    def add_print(self, info):
+        idx = self.__PRINTS.insert(info)
+        self.__PRINTS.update(set("printHistory", []), doc_ids=[idx])
+        self.__PRINTS.update(set("id", idx - 1), doc_ids=[idx])
         self.__log(idx, "add", "") 
 
     # Remove the specified print
-    def remove(self, idx):
-        self.__DB.remove(idx)
+    def remove_print(self, idx):
+        self.__PRINTS.remove(idx)
 
     # Gets the specified print by id
-    def get(self, idx):
-        return self.__DB.all()[idx]
+    def get_print(self, idx):
+        return self.__PRINTS.all()[idx]
 
     # Gets the first n prints given a query
-    def get_n(self, n, query=None):
-        prints = self.__DB.all()
+    def get_prints(self, n, query=None):
+        prints = self.__PRINTS.all()
 
         if query:
-            prints = self.__DB.search(query)
+            prints = self.__PRINTS.search(query)
 
-        return self.__DB.all()[:n]
+        return self.__PRINTS.all()[:n]
+
+    def get_log(self, idx):
+        return self.__LOG.search(self.__QUERY['id'] == idx)
 
     # Queries the list
     def search(self, query):
         pass
 
     # Updates the specified print
-    def edit(self, idx, printInfo):
-        self.get(idx).update(printInfo, doc_id=idx)
+    def edit_print(self, idx, printInfo):
+        self.get_print(idx).update(printInfo, doc_id=idx)
+        self.__log(idx, "edit", "")
 
     # Logs information, should only be used internally
     # Useful for making log messages consistent
     def __log(self, idx, action, note):
-        self.__DB.update(add('printHistory', "{\"action\": \"test\", \"note\": \"\", \"unixTime\": 000000\}"), 
-            doc_ids = [idx]
-        )
+        self.__LOG.insert({"id": idx, "time": time(), "action": action, "note": note})
