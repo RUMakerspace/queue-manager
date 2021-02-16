@@ -125,6 +125,7 @@
           <th scope="col">Time</th>
         </tr>
       </thead>
+	  <tbody>
       {% for action in actions %}
       <tr>
         <td>{{action.action}} {% if action.note != "" %} ({{ action.note }}){% endif %}</td>

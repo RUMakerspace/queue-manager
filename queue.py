@@ -4,7 +4,7 @@ from tinydb.operations import *
 from time import time
 
 # Queue Database wrapper
-class Queue():
+class Queue:
     __DB = None
     __QUERY = None
     __PRINTS = None
@@ -13,14 +13,14 @@ class Queue():
     def __init__(self, path):
         self.__DB = TinyDB(path)
         self.__QUERY = Query()
-        self.__PRINTS = self.__DB.table('queue')
-        self.__LOG = self.__DB.table('log')
+        self.__PRINTS = self.__DB.table("queue")
+        self.__LOG = self.__DB.table("log")
 
     # Adds the info to the database
     def add_print(self, info):
         idx = self.__PRINTS.insert(info)
         self.__PRINTS.update(set("id", idx), doc_ids=[idx])
-        self.log(idx, "add", "") 
+        self.log(idx, "add", "")
 
     # Remove the specified print
     def remove_print(self, idx):
@@ -28,7 +28,7 @@ class Queue():
 
     # Gets the specified print by id
     def get_print(self, idx):
-        return self.__PRINTS.search(self.__QUERY['id'] == idx)[0]
+        return self.__PRINTS.search(self.__QUERY["id"] == idx)[0]
 
     # Gets the first n prints given a query
     def get_prints(self, n=0, query=None):
@@ -43,7 +43,7 @@ class Queue():
         return prints
 
     def get_log(self, idx):
-        return self.__LOG.search(self.__QUERY['id'] == idx)
+        return self.__LOG.search(self.__QUERY["id"] == idx)
 
     # Queries the list
     def search(self, query):

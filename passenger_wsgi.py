@@ -23,10 +23,14 @@ application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
 # Our database layer.
-queue = Queue('./db/print.json') 
-userdb = TinyDB('./db/user.json') 
+queue = Queue("./db/print.json")
+userdb = TinyDB("./db/user.json")
 
-userdb.upsert({'name': 'Rutgers', 'password': 'Makerspace', 'logged-in': True}, where('name') == 'Rutgers')
+# the makerspace user shouldn't ever have the password changed.  This also ensures there's always a user to get in if running on a new system for the first time.
+userdb.upsert(
+    {"name": "Rutgers", "password": "Makerspace", "logged-in": True},
+    where("name") == "Rutgers",
+)
 
 db = DataProvider()
 
@@ -34,8 +38,10 @@ db = DataProvider()
 login_manager = flask_login.LoginManager()
 login_manager.init_app(application)
 
+
 class User(flask_login.UserMixin):
     pass
+
 
 # This function is just to set a session timer.
 @application.before_request
@@ -47,7 +53,7 @@ def before_request():
 
 @login_manager.user_loader
 def user_loader(username):
-    if not userdb.search(where('name').matches(username, flags=re.IGNORECASE)):
+    if not userdb.search(where("name").matches(username, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -58,7 +64,7 @@ def user_loader(username):
 @login_manager.request_loader
 def request_loader(request):
     email = request.form.get("email")
-    if not userdb.search(where('email').matches(email, flags=re.IGNORECASE)):
+    if not userdb.search(where("email").matches(email, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -66,8 +72,10 @@ def request_loader(request):
 
     # DO NOT ever store passwords in plaintext and always compare password
     # hashes using constant-time comparison!
-    pw = request.form['password']
-    user.is_authenticated = userdb.search((where('email') == email) & (where('password') == pw))
+    pw = request.form["password"]
+    user.is_authenticated = userdb.search(
+        (where("email") == email) & (where("password") == pw)
+    )
     # user.is_authenticated = request.form["password"] == users[email]["password"]
     return user
 
@@ -89,7 +97,7 @@ def login():
 
         try:
             pw = flask.request.form["password"]
-            if userdb.search((where('name') == email) & (where('password') == pw)):
+            if userdb.search((where("name") == email) & (where("password") == pw)):
                 user = User()
                 user.id = email
                 login_user(user)
@@ -118,27 +126,11 @@ def logout():
     return redirect(url_for("indexPage"))
 
 
-# XXX REFACTOR HAS / HASN'T FINISHED LIST
-def hasNotFinished(item):
-    for k in item["printHistory"]:
-        if k["action"] == "finished":
-            return False
-    return True
-
-
-def hasFinished(item):
-    for k in item["printHistory"]:
-        if k["action"] == "finished":
-            return True
-    return False
-
-
 @login_required
 @application.route("/")
 def indexPage():
     # TODO: Query
     prints = queue.get_prints(20)
-    # prints = list(filter(hasNotFinished, prints))
     return render_template("main.html", prints=prints)
 
 
@@ -146,8 +138,12 @@ def indexPage():
 def finishedPage():
     # TODO: Query
     prints = queue.get_prints(20)
-    # prints = [x for x in prints if hasFinished(x)]
-    return render_template("main.html", prints=prints, finished=True)
+    return render_template(
+        "main.html",
+        prints=prints,
+        finished=True,
+        statusBar="Sorry, this page is still a work in progress.<br><br>It's not very useful yet, but we're working on it.  Hang tight!",
+    )
 
 
 @application.route("/add", methods=["GET", "POST"])
@@ -170,9 +166,11 @@ def changePrintStatus(id, action):
         queue.log(id, action, data)
     return redirect(url_for("indexPage"))
 
+
 @application.route("/manage/<id>")
 def managePrint(id):
     return queue.get_print(id)
+
 
 @login_required
 @application.route("/edit/<id>", methods=["GET", "POST"])

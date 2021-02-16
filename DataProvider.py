@@ -2,6 +2,7 @@ import json
 import time
 import hashlib
 
+
 class DataProvider:
     def __init__(self):
         self.printDB = "prints.json"
