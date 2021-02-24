@@ -2,6 +2,7 @@ import sys, os
 import json
 import datetime
 import re
+from pprint import pprint
 
 # Print Databases
 from queue import Queue
@@ -15,10 +16,6 @@ import flask
 import flask_login
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 
-# TODO: Phase out DataProvider, functions are provided by TinyDB
-from DataProvider import DataProvider
-from pprint import pprint
-
 application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
@@ -31,8 +28,6 @@ userdb.upsert(
     {"name": "Rutgers", "password": "Makerspace", "logged-in": True},
     where("name") == "Rutgers",
 )
-
-db = DataProvider()
 
 ### LOGIN SHIT
 login_manager = flask_login.LoginManager()
