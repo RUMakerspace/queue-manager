@@ -1,27 +1,37 @@
 import sys, os
 import json
 import datetime
+import re
+from pprint import pprint
 
+# Print Databases
+from queue import Queue
+from tinydb import TinyDB, where
+
+# Flask
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
+
+# Flask Login
+import flask_login
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
 
 application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
 # Our database layer.
-from DataProvider import DataProvider
-from pprint import pprint
+queue = Queue("./db/print.json")
+userdb = TinyDB("./db/user.json")
 
-db = DataProvider()
+# the makerspace user shouldn't ever have the password changed.  This also ensures there's always a user to get in if running on a new system for the first time.
+userdb.upsert(
+    {"name": "Rutgers", "password": "Makerspace", "logged-in": True},
+    where("name") == "Rutgers",
+)
 
 ### LOGIN SHIT
-import flask_login
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
-
 login_manager = flask_login.LoginManager()
 login_manager.init_app(application)
-
-users = json.loads(open("userdb.json").read())
 
 
 class User(flask_login.UserMixin):
@@ -38,7 +48,7 @@ def before_request():
 
 @login_manager.user_loader
 def user_loader(username):
-    if username not in users:
+    if not userdb.search(where("name").matches(username, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -49,7 +59,7 @@ def user_loader(username):
 @login_manager.request_loader
 def request_loader(request):
     email = request.form.get("email")
-    if email not in users:
+    if not userdb.search(where("email").matches(email, flags=re.IGNORECASE)):
         return
 
     user = User()
@@ -57,7 +67,11 @@ def request_loader(request):
 
     # DO NOT ever store passwords in plaintext and always compare password
     # hashes using constant-time comparison!
-    user.is_authenticated = request.form["password"] == users[email]["password"]
+    pw = request.form["password"]
+    user.is_authenticated = userdb.search(
+        (where("email") == email) & (where("password") == pw)
+    )
+    # user.is_authenticated = request.form["password"] == users[email]["password"]
     return user
 
 
@@ -73,9 +87,12 @@ def login():
         # user should be an instance of your `User` class
         if "email" not in flask.request.form:
             flask.redirect(flask.url_for("indexPage"))
+
         email = flask.request.form["email"]
+
         try:
-            if flask.request.form["password"] == users[email]["password"]:
+            pw = flask.request.form["password"]
+            if userdb.search((where("name") == email) & (where("password") == pw)):
                 user = User()
                 user.id = email
                 login_user(user)
@@ -104,74 +121,62 @@ def logout():
     return redirect(url_for("indexPage"))
 
 
-# XXX REFACTOR HAS / HASN'T FINISHED LIST
-def hasNotFinished(item):
-    for k in item["printHistory"]:
-        if k["action"] == "finished":
-            return False
-    return True
-
-
-def hasFinished(item):
-    for k in item["printHistory"]:
-        if k["action"] == "finished":
-            return True
-    return False
-
-
 @login_required
 @application.route("/")
 def indexPage():
-    prints = db.getPrints(-1)
-    prints = list(filter(hasNotFinished, prints))
+    # TODO: Query
+    prints = queue.get_prints(20)
     return render_template("main.html", prints=prints)
 
 
 @application.route("/finished")
 def finishedPage():
-    prints = db.getPrints(-1)
-    prints = [x for x in prints if hasFinished(x)]
-    return render_template("main.html", prints=prints, finished=True)
+    # TODO: Query
+    prints = queue.get_prints(20)
+    return render_template(
+        "main.html",
+        prints=prints,
+        finished=True,
+        statusBar="Sorry, this page is still a work in progress.<br><br>It's not very useful yet, but we're working on it.  Hang tight!",
+    )
 
 
 @application.route("/add", methods=["GET", "POST"])
 @login_required
 def addPage():
+    # TODO: Fix?
     if request.method == "POST":
-        db.addPrint(request.form.to_dict())
+        queue.add_print(request.form.to_dict())
         return redirect(url_for("indexPage"))
     return render_template("add.html")
 
 
-@application.route("/manage/<hash>/<action>", methods=["GET", "POST"])
+@application.route("/manage/<id>/<action>", methods=["GET", "POST"])
 @login_required
-def changePrintStatus(hash, action):
+def changePrintStatus(id, action):
     if request.method == "GET":
-        db.addPrintLog(hash, action, "")
+        queue.log(id, action, "")
     elif request.method == "POST":
         data = request.form.to_dict()["note"]
-        db.addPrintLog(hash, action, data)
+        queue.log(id, action, data)
     return redirect(url_for("indexPage"))
 
-@application.route("/manage/<hash>")
-def managePrint(hash):
-    return jsonify(db.getPrintByHash(hash))
+
+@application.route("/manage/<id>")
+def managePrint(id):
+    return queue.get_print(id)
+
 
 @login_required
-@application.route("/edit/<hash>", methods=["GET", "POST"])
-
-def editPrint(hash):
+@application.route("/edit/<id>", methods=["GET", "POST"])
+def editPrint(id):
+    id = int(id)
     if request.method == "POST":
-        dbItem = db.getPrintByHash(hash)
         item = request.form.to_dict()
-        item["hash"] = hash
-        item["printHistory"] = dbItem["printHistory"]
-        item["unixTime"] = dbItem["unixTime"]
-        db.editPrint(hash, item)
-        db.addPrintLog(hash, "edited", "")
+        queue.edit_print(id, item)
         return redirect(url_for("indexPage"))
     if request.method == "GET":
-        printjob = db.getPrintByHash(hash)
-        return render_template(
-            "edit.html", actions=printjob["printHistory"], printjob=printjob
-        )
+        job = queue.get_print(id)
+        log = queue.get_log(id)
+
+        return render_template("edit.html", actions=log, printjob=job)
