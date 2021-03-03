@@ -13,30 +13,20 @@ from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
 
 # Flask Login
+from users import Users
 import flask_login
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_login import LoginManager, login_required, login_user, logout_user
 
 application = Flask(__name__)
 application.secret_key = open("supersecret.key").read()
 
 # Our database layer.
 queue = Queue("./db/print.json")
-userdb = TinyDB("./db/user.json")
+users = Users("./db/users.json", application)
 
-# the makerspace user shouldn't ever have the password changed.  This also ensures there's always a user to get in if running on a new system for the first time.
-userdb.upsert(
-    {"name": "Rutgers", "password": "Makerspace", "logged-in": True},
-    where("name") == "Rutgers",
-)
-
-### LOGIN SHIT
+### LOGIN MANAGER
 login_manager = flask_login.LoginManager()
 login_manager.init_app(application)
-
-
-class User(flask_login.UserMixin):
-    pass
-
 
 # This function is just to set a session timer.
 @application.before_request
@@ -45,63 +35,42 @@ def before_request():
     application.permanent_session_lifetime = datetime.timedelta(minutes=20)
     flask.session.modified = True
 
-
 @login_manager.user_loader
 def user_loader(username):
-    if not userdb.search(where("name").matches(username, flags=re.IGNORECASE)):
-        return
+    return users.find_user(username)
 
-    user = User()
-    user.id = username
-    return user
-
-
-@login_manager.request_loader
-def request_loader(request):
-    email = request.form.get("email")
-    if not userdb.search(where("email").matches(email, flags=re.IGNORECASE)):
-        return
-
-    user = User()
-    user.id = email
-
-    # DO NOT ever store passwords in plaintext and always compare password
-    # hashes using constant-time comparison!
-    pw = request.form["password"]
-    user.is_authenticated = userdb.search(
-        (where("email") == email) & (where("password") == pw)
-    )
-    # user.is_authenticated = request.form["password"] == users[email]["password"]
-    return user
-
+# @login_manager.request_loader
+# def request_loader(request):
+#     username = request.form.get("username")
+#     password = request.form.get("password")
+# 
+#     user = users.try_login_user(username, password)
+# 
+#     if user:
+#         user.is_authenticated = True
+# 
+#     return user
 
 @application.route("/login", methods=["GET", "POST"])
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
     if request.method == "GET":
         return flask.render_template("pw.html")
     if request.method == "POST":
         # Login and validate the user.
         # user should be an instance of your `User` class
-        if "email" not in flask.request.form:
+        if "username" not in flask.request.form:
             flask.redirect(flask.url_for("indexPage"))
 
-        email = flask.request.form["email"]
+        username = flask.request.form["username"]
+        pw = flask.request.form["password"]
 
-        try:
-            pw = flask.request.form["password"]
-            if userdb.search((where("name") == email) & (where("password") == pw)):
-                user = User()
-                user.id = email
-                login_user(user)
-                flask.redirect(url_for("indexPage"))
+        print(f"{username}: {pw}")
+        auth_user = users.try_login_user(username, pw) 
 
-        except:
-            flask.redirect(url_for("logout"))
-        return flask.redirect(flask.url_for("indexPage"))
+        if auth_user:
+            login_user(auth_user)
 
+        return flask.redirect(url_for("indexPage"))
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
