@@ -20,11 +20,12 @@ class Queue:
     def add_print(self, info):
         idx = self.__PRINTS.insert(info)
         self.__PRINTS.update(set("id", idx), doc_ids=[idx])
+        self.__PRINTS.update(set("status", "new"), doc_ids=[idx])
         self.log(idx, "add", "")
 
     # Remove the specified print
     def remove_print(self, idx):
-        self.__PRINTS.remove(idx)
+        self.__PRINTS.remove(self.__QUERY["id"] == idx)
 
     # Gets the specified print by id
     def get_print(self, idx):
@@ -42,16 +43,18 @@ class Queue:
 
         return prints
 
+    # Get the log for a specific print
     def get_log(self, idx):
         return self.__LOG.search(self.__QUERY["id"] == idx)
 
-    # Queries the list
-    def search(self, query):
-        pass
+    # Updates the specified print status
+    def set_status(self, idx, status):
+        self.get_print(idx).update(set("status", status), doc_ids=[idx])
+        self.log(idx, "edit", "")
 
     # Updates the specified print
     def edit_print(self, idx, printInfo):
-        self.get_print(idx).update(printInfo, doc_id=idx)
+        self.get_print(idx).update(printInfo, doc_ids=[idx])
         self.log(idx, "edit", "")
 
     # Logs information, should only be used internally

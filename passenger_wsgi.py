@@ -6,7 +6,6 @@ from pprint import pprint
 
 # Print Databases
 from queue import Queue
-from tinydb import TinyDB, where
 
 # Flask
 from flask import Flask, render_template, redirect, url_for, jsonify, request
@@ -123,8 +122,9 @@ def addPage():
 @application.route("/manage/<id>/<action>", methods=["GET", "POST"])
 @login_required
 def changePrintStatus(id, action):
+    id = int(id)
     if request.method == "GET":
-        queue.log(id, action, "")
+        queue.set_status(id, action)
     elif request.method == "POST":
         data = request.form.to_dict()["note"]
         queue.log(id, action, data)
@@ -149,3 +149,10 @@ def editPrint(id):
         log = queue.get_log(id)
 
         return render_template("edit.html", actions=log, printjob=job)
+
+@login_required
+@application.route("/edit/delete/<idx>", methods=["POST"])
+def delete_print(idx):
+    id_num = int(idx)
+    queue.remove_print(id_num)
+    return redirect(url_for("indexPage"))
