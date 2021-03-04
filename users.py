@@ -15,7 +15,7 @@ class Users():
         # The makerspace user shouldn't ever have the password changed.  
         # This also ensures there's always a user to get in if running on a new system for the first time.
         # TODO: On install, you should create a new user.
-        self.__DB.upsert({"username": "Rutgers", "password_hash": self.__BC.generate_password_hash("Makerspace").decode("utf-8")}, where("name") == "Rutgers")
+        self.__DB.upsert({"username": "Rutgers", "password_hash": self.__BC.generate_password_hash("Makerspace").decode("utf-8")}, where("username") == "Rutgers")
 
     # Add a user if they do not exist
     def add_user(self, username, password):
