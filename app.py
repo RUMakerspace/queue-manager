@@ -6,7 +6,7 @@ def create_app(config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'queue-manager.sqlite'),
+        SQLALCHEMY_DATABASE_URI="sqlite://",
     )
 
     if config is None:
@@ -21,9 +21,16 @@ def create_app(config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-        
-    from views.dashboard import dashboard
+            
+    # Import database
+    from model.db import db
+    db.init_app(app)
 
+    # Add views
+    from views.dashboard import dashboard
     app.register_blueprint(dashboard)
+
+    app.app_context().push()
+    db.create_all()
 
     return app
