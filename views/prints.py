@@ -21,3 +21,12 @@ def add_print():
 @prints.route('/remove/<id>')
 def remove_print(id):
     return redirect(url_for("prints.show_prints"))
+
+@prints.route('/edit/<id>', methods=["GET", "POST"])
+def edit_print(id):
+    if request.method == "GET":
+        pass
+    elif request.method == "POST":
+        pass
+    else:
+        return "Invalid method!"

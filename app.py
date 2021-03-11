@@ -27,11 +27,13 @@ def create_app(config=None):
     db.init_app(app)
 
     # Add views
-    from views.default import default
+    from views.default import default, page_not_found
     from views.prints import prints
 
     app.register_blueprint(default)
     app.register_blueprint(prints)
+
+    app.register_error_handler(404, page_not_found)
 
     app.app_context().push()
     db.create_all()
