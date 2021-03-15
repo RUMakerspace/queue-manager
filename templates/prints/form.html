@@ -1,0 +1,17 @@
+{% macro form(action_text, job_name="", netid="", l_days="", l_hours="", l_mins="") %}
+<form method="post">
+  <label for="job_name">Print Job Name:</label>
+  <input name="job_name" id="job_name" value="{{ job_name }}" required>
+  <label for="netid">NetID</label>
+  <input name="netid" id="netid" value="{{ netid }}" required>
+  <div class="add__time">
+  	<label for="l_days">Days:</label>
+  	<input type="number" min=0 max=99  name="l_days" id="l_days" value="{{ l_days }}">
+  	<label for="l_hours">Hours:</label>
+  	<input type="number" min=0 max=23 name="l_hours" id="l_hours" value="{{ l_hours }}">
+  	<label for="l_mins">Minutes:</label>
+  	<input type="number" min=0 max=59 name="l_mins" id="l_mins" value="{{ l_mins }}">
+  </div>
+  <input type="submit" value="Add Print">
+</form>
+{% endmacro %}

@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <head>
-
-    </head>
+    {% include 'base/head.html' %}
     <header>
         {% block header %}{% endblock %}
     </header>
     <body>
         {% block content %}{% endblock %}
     </body>
-    <footer>
-        <!-- TODO: Add footer stuff -->
-    </footer>
+    {% include 'base/footer.html' %}
 </html>
