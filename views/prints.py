@@ -34,6 +34,9 @@ def add_print():
 
 @prints.route('/remove/<id>')
 def remove_print(id):
+    db.session.delete(PrintJob.query.get(id))
+    db.session.commit()
+
     return redirect(url_for("prints.show_prints"))
 
 @prints.route('/edit/<id>', methods=["GET", "POST"])
