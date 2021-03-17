@@ -38,10 +38,18 @@ def remove_print(id):
 
 @prints.route('/edit/<id>', methods=["GET", "POST"])
 def edit_print(id):
+    print_job = PrintJob.query.get(id)
+
     if request.method == "GET":
-        print = PrintJob.query.get(id)
-        return render_template("prints/edit.html", print=print)
+        return render_template("prints/edit.html", job=print_job)
     elif request.method == "POST":
-        pass
+        print_job.job_name = request.form.get("job_name")
+        print_job.netid = request.form.get("netid")
+        print_job.length = timedelta(
+            days=int(request.form.get("l_days")),
+            hours=int(request.form.get("l_hours")),
+            minutes=int(request.form.get("l_mins")))
+
+        return redirect(url_for("prints.show_prints"))
     else:
         return "Invalid method!"

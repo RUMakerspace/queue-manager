@@ -4,5 +4,8 @@
 <h1>Edit print</h1>
 {% endblock %}
 {% block content %}
-{{ form("Edit Print") }}
+{% set days = job.length.days %}
+{% set hours = job.length.seconds // 3600 %}
+{% set mins = (job.length.seconds - hours * 3600) // 60 %}
+{{ form(action_text="Edit Print", job_name=job.job_name, netid=job.netid, l_days=days, l_hours=hours, l_mins=mins) }}
 {% endblock %}
