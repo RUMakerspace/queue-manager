@@ -1,0 +1,12 @@
+{% macro form(action_text, name="", func="") %}
+<form method="post">
+  <label for="name">Printer Name:</label>
+  <input name="name" id="name" value="{{ name }}" required>
+  <label for="func">Printer Function</label>
+  <select name="func" id="func">
+    <option value="FDM">Fused Deposit Material (FDM)</option>
+    <option value="SLA">Sterolithography (SLA)</option>
+  </select>
+  <input type="submit" value="{{ action_text }}">
+</form>
+{% endmacro %}

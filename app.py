@@ -29,9 +29,11 @@ def create_app(config=None):
     # Add views
     from views.default import default, page_not_found
     from views.prints import prints
+    from views.printers import printers
 
     app.register_blueprint(default)
     app.register_blueprint(prints)
+    app.register_blueprint(printers)
 
     app.register_error_handler(404, page_not_found)
 

@@ -1,0 +1,9 @@
+{% extends 'base/admin.html' %}
+{% from 'printers/form.html' import form %}
+{% block header %}
+<h1>Edit printer</h1>
+{% endblock %}
+{% block content %}
+{{ form(action_text="Edit Printer", name=printer.name, func=printer.func) }}
+<button onclick="location.href='{{ url_for( 'printers.show_printers' )}}/remove/{{ printer.id }}'" type="button">Delete</button>
+{% endblock %}
