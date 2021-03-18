@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 class PrintJob(db.Model):
     class Status(Enum):
-        NEW = 1,
+        UNAPPROVED = 1,
         PRINTING = 2,
         FINISHED = 3,
         FAILED = 4
@@ -21,7 +21,7 @@ class PrintJob(db.Model):
     status = db.Column(db.Enum(Status), unique=False, nullable=False)
     description = db.Column(db.Text, unique=False, nullable=True)
 
-    def __init__(self, job_name=None, author="Makerspace", netid=None, email=None, customer_name=None, length=None, status=Status.NEW):
+    def __init__(self, job_name=None, author="Makerspace", netid=None, email=None, customer_name=None, length=None, status=Status.UNAPPROVED):
         super().__init__(job_name=job_name, author=author, netid=netid, email=email, customer_name=customer_name, length=length, status=status)
 
     def __repr__(self):

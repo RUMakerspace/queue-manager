@@ -41,7 +41,7 @@ def edit_printer(id):
         return render_template("printers/edit.html", printer=printer)
     elif request.method == "POST":
         printer.name = request.form.get("name")
-        print_job.func = request.form.get("func")
+        printer.func = request.form.get("func")
 
         return redirect(url_for("printers.show_printers"))
     else:
