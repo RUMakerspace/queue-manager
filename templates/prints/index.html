@@ -1,0 +1,9 @@
+{% extends 'base/admin.html' %}
+{% block header %}
+<h1>Prints</h1>
+{% endblock %}
+{% block content %}
+{% for print in prints %}
+<p>{{ print.job_name }}: {{ print.length }}</p>
+{% endfor %}
+{% endblock %}

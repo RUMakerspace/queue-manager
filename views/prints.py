@@ -6,7 +6,7 @@ prints = Blueprint('prints', __name__, url_prefix='/prints')
 
 @prints.route('/')
 def show_prints():
-    return f"{PrintJob.query.all()}"
+    return render_template("prints/index.html", prints=PrintJob.query.all())
 
 @prints.route('/add', methods=["GET", "POST"])
 def add_print():
