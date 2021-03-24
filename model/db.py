@@ -28,6 +28,10 @@ class PrintJob(db.Model):
         return f"{self.id}: {self.job_name}"
 
 class Printer(db.Model):
+    class Function(Enum):
+        FDM = 1,
+        SLA = 2
+
     class Status(Enum):
         IDLE = 1,
         PRINTING = 2,
@@ -35,7 +39,7 @@ class Printer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), unique=False, nullable=False)
-    func = db.Enum(enums=["FDM, SLA"], unique=False, nullable=False)
+    func = db.Column(db.Enum(Function), unique=False, nullable=False)
     status = db.Column(db.Enum(Status), unique=False, nullable=False)
 
     def __init__(self, name, func, status=Status.IDLE):
