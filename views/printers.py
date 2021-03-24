@@ -6,7 +6,7 @@ printers = Blueprint('printers', __name__, url_prefix='/printers')
 
 @printers.route('/')
 def show_printers():
-    return f"{Printer.query.all()}"
+    return render_template("printers/index.html", printers=Printer.query.all())
 
 @printers.route('/add', methods=["GET", "POST"])
 def add_printer():

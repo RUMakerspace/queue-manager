@@ -1,0 +1,9 @@
+{% extends 'base/admin.html' %}
+{% block header %}
+<h1>Printers</h1>
+{% endblock %}
+{% block content %}
+{% for printer in printers %}
+<p>{{ printer.name }}: {{ printer.func }}</p>
+{% endfor %}
+{% endblock %}
