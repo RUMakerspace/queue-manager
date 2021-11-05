@@ -34,21 +34,24 @@ def before_request():
     application.permanent_session_lifetime = datetime.timedelta(minutes=20)
     flask.session.modified = True
 
+
 @login_manager.user_loader
 def user_loader(username):
     return users.find_user(username)
+
 
 # @login_manager.request_loader
 # def request_loader(request):
 #     username = request.form.get("username")
 #     password = request.form.get("password")
-# 
+#
 #     user = users.try_login_user(username, password)
-# 
+#
 #     if user:
 #         user.is_authenticated = True
-# 
+#
 #     return user
+
 
 @application.route("/login", methods=["GET", "POST"])
 def login():
@@ -64,12 +67,13 @@ def login():
         pw = flask.request.form["password"]
 
         print(f"{username}: {pw}")
-        auth_user = users.try_login_user(username, pw) 
+        auth_user = users.try_login_user(username, pw)
 
         if auth_user:
             login_user(auth_user)
 
         return flask.redirect(url_for("indexPage"))
+
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -150,6 +154,7 @@ def editPrint(id):
 
         return render_template("edit.html", actions=log, printjob=job)
 
+
 @login_required
 @application.route("/edit/delete/<idx>", methods=["POST"])
 def delete_print(idx):
@@ -157,37 +162,43 @@ def delete_print(idx):
     queue.remove_print(id_num)
     return redirect(url_for("indexPage"))
 
+
 from parsers.gcode import extractPrusaGCodeInfo, extractPrusaThumbnails
 from parsers.ufp import getGCode, extractThumbnails, getMaterials
 
-@application.route("/api/postfile", methods=['POST'])
+
+@application.route("/api/postfile", methods=["POST"])
 def postfileTest():
-	print(request.form.to_dict())
-	files = request.files.to_dict()
-	for f in files:
-		#print(files[f].read())
-		#print(dir(files[f]))
-		
-		if files[f].filename.endswith(".ufp"):
-		
-			fileData = files[f]
-			
-			getGCode(fileData)
-			print("Ultimaker Cura UFP")
-			
-			thumbs = extractThumbnails(files[f])
-			getMaterials(files[f])
-			return render_template("imgs.html", thumbs=thumbs)
-		
-		if files[f].mimetype in ['text/x.gcode', 'text/x-gcode'] : #mimetypes for prusa gcode I think. https://mimetype.io/gcode
-			#We extract the file here to avoid issues wrt stream decoding.  May be an issue for very big files.  _okay_ for now.
-			fileData = files[f].read().decode('utf-8') 
-			extractPrusaGCodeInfo(filename = files[f].filename, fileData = fileData)
-			#thumbs = extractPrusaThumbnails(fileData)
-			#return render_template("imgs.html", thumbs=thumbs)
-		
-	return "OK",200
+    print(request.form.to_dict())
+    files = request.files.to_dict()
+    for f in files:
+        # print(files[f].read())
+        # print(dir(files[f]))
+
+        if files[f].filename.endswith(".ufp"):
+
+            fileData = files[f]
+
+            getGCode(fileData)
+            print("Ultimaker Cura UFP")
+
+            thumbs = extractThumbnails(files[f])
+            getMaterials(files[f])
+            return render_template("imgs.html", thumbs=thumbs)
+
+        if files[f].mimetype in [
+            "text/x.gcode",
+            "text/x-gcode",
+        ]:  # mimetypes for prusa gcode I think. https://mimetype.io/gcode
+            # We extract the file here to avoid issues wrt stream decoding.  May be an issue for very big files.  _okay_ for now.
+            fileData = files[f].read().decode("utf-8")
+            extractPrusaGCodeInfo(filename=files[f].filename, fileData=fileData)
+            # thumbs = extractPrusaThumbnails(fileData)
+            # return render_template("imgs.html", thumbs=thumbs)
+
+    return "OK", 200
+
 
 @application.route("/gcode")
 def gcode():
-        return render_template("gcode.html", netid="dhayden7")
+    return render_template("gcode.html", netid="dhayden7")

@@ -3,7 +3,7 @@ from flask_login import UserMixin
 from tinydb import TinyDB, where
 
 ## User container class
-class Users():
+class Users:
     __DB = None
     __BC = None
 
@@ -12,15 +12,28 @@ class Users():
         self.__DB = TinyDB(path)
         self.__BC = Bcrypt(app)
 
-        # The makerspace user shouldn't ever have the password changed.  
+        # The makerspace user shouldn't ever have the password changed.
         # This also ensures there's always a user to get in if running on a new system for the first time.
         # TODO: On install, you should create a new user.
-        self.__DB.upsert({"username": "Rutgers", "password_hash": self.__BC.generate_password_hash("Makerspace").decode("utf-8")}, where("username") == "Rutgers")
+        self.__DB.upsert(
+            {
+                "username": "Rutgers",
+                "password_hash": self.__BC.generate_password_hash("Makerspace").decode(
+                    "utf-8"
+                ),
+            },
+            where("username") == "Rutgers",
+        )
 
     # Add a user if they do not exist
     def add_user(self, username, password):
         if not self.__DB.search(where("username") == username):
-            self.__DB.insert({"username": username, "password_hash": self.__BC.generate_password_hash(password)})
+            self.__DB.insert(
+                {
+                    "username": username,
+                    "password_hash": self.__BC.generate_password_hash(password),
+                }
+            )
 
     # Find a user and generate its User object
     def find_user(self, username):
@@ -49,7 +62,6 @@ class Users():
         def __init__(self, u, pw_h):
             self.id = u
             self.password_hash = pw_h
-    
+
         def __repr__(self):
             return f"{self.id}: {self.password_hash}"
-
