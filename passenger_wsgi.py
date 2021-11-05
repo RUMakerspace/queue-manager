@@ -156,3 +156,25 @@ def delete_print(idx):
     id_num = int(idx)
     queue.remove_print(id_num)
     return redirect(url_for("indexPage"))
+
+from parsers.gcode import extractPrusaGCodeInfo, extractPrusaThumbnails
+
+@application.route("/api/postfile", methods=['POST'])
+def postfileTest():
+	print(request.form.to_dict())
+	files = request.files.to_dict()
+	for f in files:
+		#print(files[f].read())
+		#print(dir(files[f]))
+		if files[f].mimetype in ['text/x.gcode', 'text/x-gcode'] : #mimetypes for prusa gcode I think. https://mimetype.io/gcode
+			#We extract the file here to avoid issues wrt stream decoding.  May be an issue for very big files.  _okay_ for now.
+			fileData = files[f].read().decode('utf-8') 
+			extractPrusaGCodeInfo(filename = files[f].filename, fileData = fileData)
+			#thumbs = extractPrusaThumbnails(fileData)
+			#return render_template("imgs.html", thumbs=thumbs)
+		
+	return "OK",200
+
+@application.route("/gcode")
+def gcode():
+        return render_template("gcode.html", netid="dhayden7")
