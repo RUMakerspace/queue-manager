@@ -158,7 +158,7 @@ def delete_print(idx):
     return redirect(url_for("indexPage"))
 
 from parsers.gcode import extractPrusaGCodeInfo, extractPrusaThumbnails
-from parsers.ufp import getGCode, extractThumbnails
+from parsers.ufp import getGCode, extractThumbnails, getMaterials
 
 @application.route("/api/postfile", methods=['POST'])
 def postfileTest():
@@ -166,7 +166,7 @@ def postfileTest():
 	files = request.files.to_dict()
 	for f in files:
 		#print(files[f].read())
-		print(dir(files[f]))
+		#print(dir(files[f]))
 		
 		if files[f].filename.endswith(".ufp"):
 		
@@ -176,6 +176,7 @@ def postfileTest():
 			print("Ultimaker Cura UFP")
 			
 			thumbs = extractThumbnails(files[f])
+			getMaterials(files[f])
 			return render_template("imgs.html", thumbs=thumbs)
 		
 		if files[f].mimetype in ['text/x.gcode', 'text/x-gcode'] : #mimetypes for prusa gcode I think. https://mimetype.io/gcode

@@ -8,6 +8,7 @@
 
 from zipfile import ZipFile
 import base64
+import pprint
 
 def confirmType(file):
 	pass
@@ -16,9 +17,34 @@ def getGCode(file):
 	# Here we take in the files[f] object because it's BytesIO in memory like the other stuff.
 	q = ZipFile(file)
 	gco = (q.read("/3D/model.gcode"))
+	return gco
 	
+def getMaterials(file):
+
+	q = ZipFile(file)
+	filelist = q.namelist()
 	
+	#This filters us down to just files in the Materials directory luckily.
+	# Should only be a few.
+	filelist = [ x for x in filelist if x.startswith("/Materials/")]
 	
+	#loads each material.
+	filelist = [ q.read(x).decode('utf-8') for x in filelist]
+	
+	#print(filelist)
+	import xml.etree.ElementTree as ET
+	
+	#print(filelist)
+	
+	for f in filelist:
+		currentXML = ET.fromstring(f)
+		print("/here")
+		tags = currentXML.findall('metadata/name/material')
+		print(tags)
+		
+		for taggo in tags:
+			print(taggo)
+
 	
 def extractThumbnails(file):
 	q = ZipFile(file)
