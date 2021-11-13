@@ -163,38 +163,15 @@ def delete_print(idx):
     return redirect(url_for("indexPage"))
 
 
-from parsers.gcode import extractPrusaGCodeInfo, extractPrusaThumbnails
-from parsers.ufp import getGCode, extractThumbnails, getMaterials
+from parsers.detector import detectFile
 
 
 @application.route("/api/postfile", methods=["POST"])
 def postfileTest():
-    print(request.form.to_dict())
-    files = request.files.to_dict()
-    for f in files:
-        # print(files[f].read())
-        # print(dir(files[f]))
+    fileList = request.files.to_dict()
+    formDict = request.form.to_dict()
 
-        if files[f].filename.endswith(".ufp"):
-
-            fileData = files[f]
-
-            getGCode(fileData)
-            print("Ultimaker Cura UFP")
-
-            thumbs = extractThumbnails(files[f])
-            getMaterials(files[f])
-            return render_template("imgs.html", thumbs=thumbs)
-
-        if files[f].mimetype in [
-            "text/x.gcode",
-            "text/x-gcode",
-        ]:  # mimetypes for prusa gcode I think. https://mimetype.io/gcode
-            # We extract the file here to avoid issues wrt stream decoding.  May be an issue for very big files.  _okay_ for now.
-            fileData = files[f].read().decode("utf-8")
-            extractPrusaGCodeInfo(filename=files[f].filename, fileData=fileData)
-            # thumbs = extractPrusaThumbnails(fileData)
-            # return render_template("imgs.html", thumbs=thumbs)
+    detectFile(fileList=fileList, formDict=formDict)
 
     return "OK", 200
 
