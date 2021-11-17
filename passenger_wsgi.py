@@ -4,9 +4,6 @@ import datetime
 import re
 from pprint import pprint
 
-# Print Databases
-from queue import Queue
-
 # Flask
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 import flask
@@ -16,12 +13,44 @@ from users import Users
 import flask_login
 from flask_login import LoginManager, login_required, login_user, logout_user
 
+# APScheduler for scheduled tasks.
+from flask_apscheduler import APScheduler
+
 application = Flask(__name__)
+# Flask Login needs a key.
 application.secret_key = open("supersecret.key").read()
 
-# Our database layer.
-queue = Queue("./db/print.json")
+# Enable APScheduler.
+scheduler = APScheduler()
+scheduler.init_app(application)
+scheduler.api_enabled = True  # may need to be disabled
+application.app_context().push()
+scheduler.start()
+
+from helpers.alexandria import produceUsers, produceUserSubmissions
+import json
+
+
+@scheduler.task("interval", id="poke_at_alexandria", seconds=125)
+def lexandria_poke():
+
+    userFolders = produceUsers()
+
+    output = []
+    for u in userFolders:
+        output.append({"user": u, dates: produceUserSubmissions(u)})
+
+    with open("alexandria.json", "w") as alex:
+        alex.write(json.dumps(output))
+
+    print("[debug] Produced list of users and projects from alexandria.")
+
+
 users = Users("./db/users.json", application)
+
+from blueprints.recent.recent import recent
+
+application.register_blueprint(recent, url_prefix="/recent")
 
 ### LOGIN MANAGER
 login_manager = flask_login.LoginManager()
@@ -34,21 +63,24 @@ def before_request():
     application.permanent_session_lifetime = datetime.timedelta(minutes=20)
     flask.session.modified = True
 
+
 @login_manager.user_loader
 def user_loader(username):
     return users.find_user(username)
+
 
 # @login_manager.request_loader
 # def request_loader(request):
 #     username = request.form.get("username")
 #     password = request.form.get("password")
-# 
+#
 #     user = users.try_login_user(username, password)
-# 
+#
 #     if user:
 #         user.is_authenticated = True
-# 
+#
 #     return user
+
 
 @application.route("/login", methods=["GET", "POST"])
 def login():
@@ -64,12 +96,13 @@ def login():
         pw = flask.request.form["password"]
 
         print(f"{username}: {pw}")
-        auth_user = users.try_login_user(username, pw) 
+        auth_user = users.try_login_user(username, pw)
 
         if auth_user:
             login_user(auth_user)
 
         return flask.redirect(url_for("indexPage"))
+
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -86,73 +119,4 @@ def protected():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("indexPage"))
-
-
-@login_required
-@application.route("/")
-def indexPage():
-    # TODO: Query
-    prints = queue.get_prints(20)
-    return render_template("main.html", prints=prints)
-
-
-@application.route("/finished")
-def finishedPage():
-    # TODO: Query
-    prints = queue.get_prints(20)
-    return render_template(
-        "main.html",
-        prints=prints,
-        finished=True,
-        statusBar="Sorry, this page is still a work in progress.<br><br>It's not very useful yet, but we're working on it.  Hang tight!",
-    )
-
-
-@application.route("/add", methods=["GET", "POST"])
-@login_required
-def addPage():
-    # TODO: Fix?
-    if request.method == "POST":
-        queue.add_print(request.form.to_dict())
-        return redirect(url_for("indexPage"))
-    return render_template("add.html")
-
-
-@application.route("/manage/<id>/<action>", methods=["GET", "POST"])
-@login_required
-def changePrintStatus(id, action):
-    id = int(id)
-    if request.method == "GET":
-        queue.set_status(id, action)
-    elif request.method == "POST":
-        data = request.form.to_dict()["note"]
-        queue.log(id, action, data)
-    return redirect(url_for("indexPage"))
-
-
-@application.route("/manage/<id>")
-def managePrint(id):
-    return queue.get_print(id)
-
-
-@login_required
-@application.route("/edit/<id>", methods=["GET", "POST"])
-def editPrint(id):
-    id = int(id)
-    if request.method == "POST":
-        item = request.form.to_dict()
-        queue.edit_print(id, item)
-        return redirect(url_for("indexPage"))
-    if request.method == "GET":
-        job = queue.get_print(id)
-        log = queue.get_log(id)
-
-        return render_template("edit.html", actions=log, printjob=job)
-
-@login_required
-@application.route("/edit/delete/<idx>", methods=["POST"])
-def delete_print(idx):
-    id_num = int(idx)
-    queue.remove_print(id_num)
     return redirect(url_for("indexPage"))
