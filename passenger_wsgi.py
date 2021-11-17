@@ -120,3 +120,94 @@ def protected():
 def logout():
     logout_user()
     return redirect(url_for("indexPage"))
+<<<<<<< HEAD
+=======
+
+
+@login_required
+@application.route("/")
+def indexPage():
+    # TODO: Query
+    prints = queue.get_prints(20)
+    return render_template("main.html", prints=prints)
+
+
+@application.route("/finished")
+def finishedPage():
+    # TODO: Query
+    prints = queue.get_prints(20)
+    return render_template(
+        "main.html",
+        prints=prints,
+        finished=True,
+        statusBar="Sorry, this page is still a work in progress.<br><br>It's not very useful yet, but we're working on it.  Hang tight!",
+    )
+
+
+@application.route("/add", methods=["GET", "POST"])
+@login_required
+def addPage():
+    # TODO: Fix?
+    if request.method == "POST":
+        queue.add_print(request.form.to_dict())
+        return redirect(url_for("indexPage"))
+    return render_template("add.html")
+
+
+@application.route("/manage/<id>/<action>", methods=["GET", "POST"])
+@login_required
+def changePrintStatus(id, action):
+    id = int(id)
+    if request.method == "GET":
+        queue.set_status(id, action)
+    elif request.method == "POST":
+        data = request.form.to_dict()["note"]
+        queue.log(id, action, data)
+    return redirect(url_for("indexPage"))
+
+
+@application.route("/manage/<id>")
+def managePrint(id):
+    return queue.get_print(id)
+
+
+@login_required
+@application.route("/edit/<id>", methods=["GET", "POST"])
+def editPrint(id):
+    id = int(id)
+    if request.method == "POST":
+        item = request.form.to_dict()
+        queue.edit_print(id, item)
+        return redirect(url_for("indexPage"))
+    if request.method == "GET":
+        job = queue.get_print(id)
+        log = queue.get_log(id)
+
+        return render_template("edit.html", actions=log, printjob=job)
+
+
+@login_required
+@application.route("/edit/delete/<idx>", methods=["POST"])
+def delete_print(idx):
+    id_num = int(idx)
+    queue.remove_print(id_num)
+    return redirect(url_for("indexPage"))
+
+
+from parsers.detector import detectFile
+
+
+@application.route("/api/postfile", methods=["POST"])
+def postfileTest():
+    fileList = request.files.to_dict()
+    formDict = request.form.to_dict()
+
+    detectFile(fileList=fileList, formDict=formDict)
+
+    return "OK", 200
+
+
+@application.route("/gcode")
+def gcode():
+    return render_template("gcode.html", netid="dhayden7")
+>>>>>>> 89a06e3fc616c3913f953afebe8530f7a6b5fccb
