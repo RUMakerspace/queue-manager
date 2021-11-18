@@ -27,30 +27,22 @@ scheduler.api_enabled = True  # may need to be disabled
 application.app_context().push()
 scheduler.start()
 
-from helpers.alexandria import produceUsers, produceUserSubmissions
+from helpers.alexandria import produceUsers, produceUserSubmissions, produceJobsMetadata
 import json
 
 
-@scheduler.task("interval", id="poke_at_alexandria", seconds=125)
+@scheduler.task("interval", id="poke_at_alexandria", seconds=12)
 def lexandria_poke():
-
-    userFolders = produceUsers()
-
-    output = []
-    for u in userFolders:
-        output.append({"user": u, dates: produceUserSubmissions(u)})
-
-    with open("alexandria.json", "w") as alex:
-        alex.write(json.dumps(output))
-
-    print("[debug] Produced list of users and projects from alexandria.")
+    produceJobsMetadata()
 
 
 users = Users("./db/users.json", application)
 
 from blueprints.recent.recent import recent
+from blueprints.new.new import new as newPrint
 
 application.register_blueprint(recent, url_prefix="/recent")
+application.register_blueprint(newPrint, url_prefix="/new")
 
 ### LOGIN MANAGER
 login_manager = flask_login.LoginManager()
@@ -120,94 +112,15 @@ def protected():
 def logout():
     logout_user()
     return redirect(url_for("indexPage"))
-<<<<<<< HEAD
-=======
 
 
-@login_required
+from helpers.alexandria import readDataFromFile
+
+
 @application.route("/")
-def indexPage():
-    # TODO: Query
-    prints = queue.get_prints(20)
-    return render_template("main.html", prints=prints)
-
-
-@application.route("/finished")
-def finishedPage():
-    # TODO: Query
-    prints = queue.get_prints(20)
-    return render_template(
-        "main.html",
-        prints=prints,
-        finished=True,
-        statusBar="Sorry, this page is still a work in progress.<br><br>It's not very useful yet, but we're working on it.  Hang tight!",
-    )
-
-
-@application.route("/add", methods=["GET", "POST"])
-@login_required
-def addPage():
-    # TODO: Fix?
-    if request.method == "POST":
-        queue.add_print(request.form.to_dict())
-        return redirect(url_for("indexPage"))
-    return render_template("add.html")
-
-
-@application.route("/manage/<id>/<action>", methods=["GET", "POST"])
-@login_required
-def changePrintStatus(id, action):
-    id = int(id)
-    if request.method == "GET":
-        queue.set_status(id, action)
-    elif request.method == "POST":
-        data = request.form.to_dict()["note"]
-        queue.log(id, action, data)
-    return redirect(url_for("indexPage"))
-
-
-@application.route("/manage/<id>")
-def managePrint(id):
-    return queue.get_print(id)
-
-
-@login_required
-@application.route("/edit/<id>", methods=["GET", "POST"])
-def editPrint(id):
-    id = int(id)
-    if request.method == "POST":
-        item = request.form.to_dict()
-        queue.edit_print(id, item)
-        return redirect(url_for("indexPage"))
-    if request.method == "GET":
-        job = queue.get_print(id)
-        log = queue.get_log(id)
-
-        return render_template("edit.html", actions=log, printjob=job)
-
-
-@login_required
-@application.route("/edit/delete/<idx>", methods=["POST"])
-def delete_print(idx):
-    id_num = int(idx)
-    queue.remove_print(id_num)
-    return redirect(url_for("indexPage"))
-
-
-from parsers.detector import detectFile
-
-
-@application.route("/api/postfile", methods=["POST"])
-def postfileTest():
-    fileList = request.files.to_dict()
-    formDict = request.form.to_dict()
-
-    detectFile(fileList=fileList, formDict=formDict)
-
-    return "OK", 200
-
-
-@application.route("/gcode")
-def gcode():
-    return render_template("gcode.html", netid="dhayden7")
->>>>>>> 89a06e3fc616c3913f953afebe8530f7a6b5fccb
+def mainThing():
+    dataq = readDataFromFile()
+    print(len(dataq))
+    dataq = sorted(dataq, key=lambda x: (len(x["dates"]), x["user"]))
+    # dataq = sorted(dataq, key = lambda x : len(x['user']))
+    return render_template("base.html", dat=dataq, enumerate=enumerate)
