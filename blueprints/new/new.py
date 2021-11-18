@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, abort, request
 from jinja2 import TemplateNotFound
+from helpers.alexandria import produceUsers
 
 new = Blueprint("new", __name__, template_folder="templates")
 
@@ -7,8 +8,11 @@ new = Blueprint("new", __name__, template_folder="templates")
 @new.route("/")
 def show():
     try:
-        usersName = request.args.to_dict()["usersName"]
-        return render_template("gcode.html", usersName=usersName)
+        usersName = request.args.to_dict()
+        users = None
+        if "usersName" not in usersName:
+            users = produceUsers()
+        return render_template("gcode.html", usersName=usersName, users=users)
     except TemplateNotFound:
         abort(404)
 

@@ -1,10 +1,46 @@
-<head>
+{% extends "base.html" %}
+{% block extrahead %}
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css">
-</head>
+{% endblock %}
 
-<body>
 
+{% block main %}
+<div class="row">
+<div class="col col-sm-12 col-lg-6">
+{% if users %}
+<div class="card">
+ <div class="card-header">
+    <b>Choose Existing User / Group</b>
+  </div>
+  
+  
+
+  <ul class="list-group">
+     <li class="list-group-item d-flex justify-content-between align-items-center">
+    <a href="#">Super Fake User</a>
+    <span><span title="Total submitted." class="badge bg-secondary rounded-pill">14</span> | <span title="Total finished." class="badge bg-success rounded-pill">2</span> </spam?
+    </li>
+{% for u in users %}
+     <li class="list-group-item d-flex justify-content-between align-items-center">
+    <a href="#">{{u}}</a>
+    <span class="badge bg-secondary rounded-pill">0</span>
+    </li>
+{% endfor %}
+  </ul>
+  </div>
+  </div>
+<div class="col col-sm-12 col-lg-6">
+<label for="button-addon2" class="form-label">Make New User</label>
+<div class="input-group">
+  <input type="text" class="form-control" placeholder="User's Name / Group's Name" aria-label="User's Name / Group's Name" aria-describedby="button-addon2">
+  <button class="btn btn-outline-secondary" type="button" id="button-addon2">Make User</button>
+</div>
+</div>
+</div>
+{% endif %}
+{% if usersName %}
+</div>
 <form action="/new/api/upload" class="dropzone" id="gcodedropper">
 <input id="usersName" name="usersName" value="{{usersName}}" hidden></input>
 
@@ -16,4 +52,5 @@ acceptedFiles:".gcode, .gco, .3mf, .form, .ufp"
 
 }
 </script>
-</body>
+{% endif %}
+{% endblock %}

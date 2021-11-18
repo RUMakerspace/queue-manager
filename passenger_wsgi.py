@@ -27,13 +27,18 @@ scheduler.api_enabled = True  # may need to be disabled
 application.app_context().push()
 scheduler.start()
 
-from helpers.alexandria import produceUsers, produceUserSubmissions, produceJobsMetadata
+from helpers.alexandria import (
+    produceUsers,
+    produceUserSubmissions,
+    produceJobsMetadata,
+    produceToFileParentInfo,
+)
 import json
 
 
 @scheduler.task("interval", id="poke_at_alexandria", seconds=12)
 def lexandria_poke():
-    produceJobsMetadata()
+    produceToFileParentInfo()
 
 
 users = Users("./db/users.json", application)
@@ -123,4 +128,4 @@ def mainThing():
     print(len(dataq))
     dataq = sorted(dataq, key=lambda x: (len(x["dates"]), x["user"]))
     # dataq = sorted(dataq, key = lambda x : len(x['user']))
-    return render_template("base.html", dat=dataq, enumerate=enumerate)
+    return render_template("main.html", dat=dataq, enumerate=enumerate)
