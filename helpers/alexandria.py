@@ -3,8 +3,8 @@ from os.path import isfile, join, isdir
 from pprint import pprint
 import json
 
-# basePath = """//alexandria.rutgers.edu/makerspace-shared/!3D Prints/"""
-basePath = """./Prints/"""
+basePath = """//alexandria.rutgers.edu/makerspace-shared/!3D Prints/"""
+# basePath = """./Prints/"""
 
 # This is intended to run on a windows
 # computer with access to the drive

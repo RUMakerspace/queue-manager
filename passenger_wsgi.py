@@ -36,7 +36,7 @@ from helpers.alexandria import (
 import json
 
 
-@scheduler.task("interval", id="poke_at_alexandria", seconds=12)
+@scheduler.task("interval", id="poke_at_alexandria", seconds=120)
 def lexandria_poke():
     produceToFileParentInfo()
     produceJobsMetadata()

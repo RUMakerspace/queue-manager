@@ -4,6 +4,8 @@ from helpers.alexandria import produceUsers
 
 new = Blueprint("new", __name__, template_folder="templates")
 
+import time
+
 
 @new.route("/")
 def show():
@@ -12,7 +14,12 @@ def show():
         users = None
         if "usersName" not in usersName:
             users = produceUsers()
-        return render_template("gcode.html", usersName=usersName, users=users)
+        return render_template(
+            "gcode.html",
+            usersName=usersName,
+            users=users,
+            currDate=time.strftime("%Y.%m.%d"),
+        )
     except TemplateNotFound:
         abort(404)
 
