@@ -5,7 +5,7 @@ import re
 from pprint import pprint
 
 # Flask
-from flask import Flask, render_template, redirect, url_for, jsonify, request
+from flask import Flask, render_template, redirect, url_for, jsonify, request, flash
 import flask
 
 # Flask Login
@@ -39,6 +39,7 @@ import json
 @scheduler.task("interval", id="poke_at_alexandria", seconds=12)
 def lexandria_poke():
     produceToFileParentInfo()
+    produceJobsMetadata()
 
 
 users = Users("./db/users.json", application)

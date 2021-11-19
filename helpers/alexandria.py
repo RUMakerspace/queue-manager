@@ -54,6 +54,17 @@ def produceJobsMetadata():
 
     usersFlat = []
 
+    for u in [q["user"] for q in usersDirectories]:
+        tempPath = join(basePath, u)
+        if not isfile(join(tempPath, "userinfo.json")):
+            with open(join(tempPath, "userinfo.json"), "w") as userdata:
+                userdata.write(
+                    json.dumps(
+                        {"name": None, "email": None, "netid": None, "shadow": True}
+                    )
+                )
+            print("[debug] Wrote user profile empty of {}".format(u))
+
     for u in usersDirectories:
         user = u["user"]
         for d in u["dates"]:
