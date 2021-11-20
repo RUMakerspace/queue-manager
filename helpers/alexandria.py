@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, mkdir
 from os.path import isfile, join, isdir
 from pprint import pprint
 import json
@@ -79,3 +79,19 @@ def produceJobsMetadata():
             with open(join(u, "jobdata.json"), "w") as jobdata:
                 jobdata.write(json.dumps({}))
                 print("Wrote {}".format(u))
+
+
+def userExists(userString: str) -> bool:
+    return isdir(join(basePath, userString))
+
+
+def userFolderExists(userString: str, userFolderString: str) -> bool:
+    return isdir(join(join(basePath, userString), userFolderString))
+
+
+def makeUserFolder(userString: str) -> None:
+    mkdir(join(basePath, userString))
+
+
+def makeUserProjectFolder(userString: str, userFolderString: str) -> None:
+    mkdir(join(join(basePath, userString), userFolderString))
