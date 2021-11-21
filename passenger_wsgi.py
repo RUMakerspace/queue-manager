@@ -46,9 +46,11 @@ users = Users("./db/users.json", application)
 
 from blueprints.recent.recent import recent
 from blueprints.new.new import new as newPrint
+from blueprints.edit.edit import edit as editPrint
 
 application.register_blueprint(recent, url_prefix="/recent")
 application.register_blueprint(newPrint, url_prefix="/new")
+application.register_blueprint(editPrint, url_prefix="/edit")
 
 ### LOGIN MANAGER
 login_manager = flask_login.LoginManager()
