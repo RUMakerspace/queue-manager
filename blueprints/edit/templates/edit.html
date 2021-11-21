@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block extrahead %}
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css">
+{% endblock %}
+
+{% block title %}
+<title>Edit Print</title>
+{% endblock %}
+
+{% block main %}
+<div class="row">
+<div class="col col-sm-12 col-lg-4">
+
+<script>
+const isdigit=(value)=>{
+    const val=Number(value)?true:false
+    console.log(val);
+    return val
+}
+
+function trySetMaterialCost() {
+console.log("in mat cost func");
+var matQuantity = document.getElementById("matQty1").value;
+var matSelectorKey = document.getElementById("materialSelector").value;
+var materialCostPerUnit = materialsCost[matSelectorKey];
+var outputCost = materialCostPerUnit * matQuantity;
+
+console.log(matQuantity);
+console.log(matSelectorKey);
+console.log(materialCostPerUnit);
+console.log(outputCost);
+
+document.getElementById("matCost1").setAttribute("value", materialCostPerUnit);
+document.getElementById("totalCost").setAttribute("value", Number.parseFloat(outputCost).toFixed(2));
+}
+
+var materialsCost = [
+0, .04, .04, .30, .03, .19, .22
+];
+
+</script>
+
+<!-- Material selector. --> 
+<label for="materialSelector" class="form-label">Print Material</label>
+<select name="materialSelector" id="materialSelector" class="form-select" aria-label="Default select example" onchange="trySetMaterialCost();">
+  <option value="0" selected>Select material</option>
+  <option value="1">PLA</option>
+  <option value="2">PETG</option>
+  <option value="" disabled><hr></option> <!--Test? -->
+  <option value="3">Onyx</option>
+  <option value="4">TPU</option>
+  <option value="" disabled><hr></option> <!--Test? -->
+  <option value="5">Clear Formlabs Resin</option>
+  <option value="5">White Formlabs Resin</option>
+  <option value="5">Grey Formlabs Resin</option>
+  <option value="5">Black Formlabs Resin</option>
+  <option value="6">Tough Formlabs Resin</option>
+</select>
+
+<!--Input material quantity. -->
+
+<label for="matQty1" class="form-label">Material Quantity</label>
+<div class="input-group mb-3">
+  <input type="number" id="matQty1" class="form-control" placeholder="" aria-label="Material Quantity" onchange="trySetMaterialCost();">
+    <span class="input-group-text" id="matQtySuffix">g, mL or cm³</span>
+</div>
+
+
+
+<!--Input material cost.. -->
+
+<label for="matCost1" class="form-label">Material Cost</label>
+<div class="input-group mb-3">
+  <span class="input-group-text" id="matCostPrefix">$</span>
+  <input type="number" id="matCost1" class="form-control" placeholder="User material selector." aria-label="Material Cost" disabled>
+    <span class="input-group-text" id="basic-addon1">/qty</span>
+</div>
+
+<hr>
+<!--Input material cost.. -->
+<label for="totalCost" class="form-label">Total Print Cost</label>
+<div class="input-group mb-3">
+  <span class="input-group-text" id="totalCostPrefix">$</span>
+  <input type="number" id="totalCost" class="form-control" placeholder="$0.00" aria-label="Total Cost" disabled>
+</div>
+
+</div> {# Closes left column. #}
+
+<div class="col col-sm-12 col-lg-4">
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Add New Print Status
+</button>
+
+<hr> 
+
+<h4> Recent Statuses</h4>
+
+<div class="py-2">
+<div class="card w-100">
+  <div class="card-body">
+    <h5 class="card-title">Failed</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Vallika (2021.11.24 @ 2:54PM)</h6>
+    <p class="card-text">Print didn't have good bed adhesion.</p>
+  </div>
+</div>
+</div>
+
+<div class="py-2">
+<div class="card w-100">
+  <div class="card-body">
+    <h5 class="card-title">Started</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Vallika (2021.11.24 @ 1:07PM)</h6>
+    <p class="card-text">Put on Prusa MK3S #3.</p>
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</div> {# Closes right column. #}
+
+<div class="col col-sm-12 col-lg-4"> {# far right columns #}
+ <div class="form-group">
+    <label for="exampleFormControlTextarea1">Print Notes</label>
+    <textarea class="form-control" id="printNotes" name="printnotes" rows="5"></textarea>
+  </div>
+  
+</div> {# closes far right column #}
+</div> {# Closes row. #}
+{% endblock %}
