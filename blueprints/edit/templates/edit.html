@@ -23,7 +23,7 @@ function trySetMaterialCost() {
 console.log("in mat cost func");
 var matQuantity = document.getElementById("matQty1").value;
 var matSelectorKey = document.getElementById("materialSelector").value;
-var materialCostPerUnit = materialsCost[matSelectorKey];
+var materialCostPerUnit = materialsCost[matSelectorKey][0];
 var outputCost = materialCostPerUnit * matQuantity;
 
 console.log(matQuantity);
@@ -32,18 +32,35 @@ console.log(materialCostPerUnit);
 console.log(outputCost);
 
 document.getElementById("matCost1").setAttribute("value", materialCostPerUnit);
+
+// This changed whether the total cost is listed as void or not.
+if (Number.parseFloat(outputCost).toFixed(2) < Number.parseFloat(1.0).toFixed(2)) {
+document.getElementById("totalCostPrefix").innerHTML = "$ (Void)";
+} else{
+document.getElementById("totalCostPrefix").innerHTML = "$";
+}
+// These two change the labels on the site when changed the material or quantity.
+document.getElementById("matQtySuffix").innerHTML = (materialsCost[matSelectorKey][1]);
+document.getElementById("matCostSuffix").innerHTML = "/" + (materialsCost[matSelectorKey][1]);
+
 document.getElementById("totalCost").setAttribute("value", Number.parseFloat(outputCost).toFixed(2));
 }
-
+// materials cost table, to be pulled from alexandria in the future.  For now this works?
 var materialsCost = [
-0, .04, .04, .30, .03, .19, .22
+[0, 'g'],
+[.04, 'g'],
+[.04, 'g'],
+[.30, 'cm³'],
+[.03, 'g'],
+[.19, 'mL'],
+[.22, 'mL']
 ];
 
 </script>
 
 <!-- Material selector. --> 
 <label for="materialSelector" class="form-label">Print Material</label>
-<select name="materialSelector" id="materialSelector" class="form-select" aria-label="Default select example" onchange="trySetMaterialCost();">
+<select name="materialSelector" id="materialSelector" class="form-select" aria-label="Default select example" onchange="trySetMaterialCost();" required>
   <option value="0" selected>Select material</option>
   <option value="1">PLA</option>
   <option value="2">PETG</option>
@@ -62,8 +79,8 @@ var materialsCost = [
 
 <label for="matQty1" class="form-label">Material Quantity</label>
 <div class="input-group mb-3">
-  <input type="number" id="matQty1" class="form-control" placeholder="" aria-label="Material Quantity" onchange="trySetMaterialCost();">
-    <span class="input-group-text" id="matQtySuffix">g, mL or cm³</span>
+  <input type="number" id="matQty1" class="form-control" placeholder="" aria-label="Material Quantity" onchange="trySetMaterialCost();" required>
+    <span class="input-group-text" name="matQtySuffix" id="matQtySuffix">g, mL or cm³</span>
 </div>
 
 
@@ -74,7 +91,7 @@ var materialsCost = [
 <div class="input-group mb-3">
   <span class="input-group-text" id="matCostPrefix">$</span>
   <input type="number" id="matCost1" class="form-control" placeholder="User material selector." aria-label="Material Cost" disabled>
-    <span class="input-group-text" id="basic-addon1">/qty</span>
+    <span class="input-group-text" name="matCostSuffix" id="matCostSuffix">/qty</span>
 </div>
 
 <hr>
@@ -82,11 +99,20 @@ var materialsCost = [
 <label for="totalCost" class="form-label">Total Print Cost</label>
 <div class="input-group mb-3">
   <span class="input-group-text" id="totalCostPrefix">$</span>
-  <input type="number" id="totalCost" class="form-control" placeholder="$0.00" aria-label="Total Cost" disabled>
+  <input type="number" id="totalCost" name="totalCost" class="form-control" placeholder="0.00" aria-label="Total Cost" disabled>
 </div>
 
 </div> {# Closes left column. #}
 
+<div class="col col-sm-12 col-lg-4"> {# right column #}
+ <div class="form-group">
+    <label for="exampleFormControlTextarea1">Print Notes</label>
+    <textarea class="form-control" id="printNotes" name="printnotes" rows="5"></textarea>
+  </div>
+  
+</div> {# closes right column #}
+
+{# opens far right column #}
 <div class="col col-sm-12 col-lg-4">
 
 <!-- Button trigger modal -->
@@ -102,7 +128,8 @@ var materialsCost = [
 <div class="card w-100">
   <div class="card-body">
     <h5 class="card-title">Failed</h5>
-        <h6 class="card-subtitle mb-2 text-muted">Vallika (2021.11.24 @ 2:54PM)</h6>
+        <h6 class="card-subtitle mb-2 text-muted">Vallika</h6>
+        <p class="card-text"><small class="text-muted">(2021.11.24 @ 2:54PM)</small></p>
     <p class="card-text">Print didn't have good bed adhesion.</p>
   </div>
 </div>
@@ -123,15 +150,43 @@ var materialsCost = [
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Print Status Update</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        ...
+      <!-- Popup modal for new print status. -->
+      
+      <div class="py-2">
+       <select class="form-select py-2" aria-label="Default select example" required>
+  <option selected>Who?</option>
+{% for user in validPrintingUsers %}
+  <option value="{{user.key}}">{{user.name}}</option>
+{% endfor %}
+</select>
+</div>
+<!-- Select for what status -->
+<div class="py-2">
+       <select class="form-select py-2" aria-label="Default select example" required>
+  <option selected>Status?</option>
+  <option value="start">Print Started</option>
+  <option value="change_submitted">User Submitted File Info Change / More Context</option>
+  <option value="finished">Print Finished</option>
+  <option value="pickedup">Picked Up</option>
+  <option value="failed">Print Failed</option>
+  <option value="cancelled">Print Cancelled</option>
+</select>
+</div>
+
+<div class="mb-3">
+  <label for="printStatusChangeNotes" class="form-label">Change Notes</label>
+  <textarea class="form-control" id="printStatusChangeNotes" rows="3"></textarea>
+</div>
+
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-primary">Submit Status</button>
       </div>
     </div>
   </div>
@@ -140,13 +195,5 @@ var materialsCost = [
 
 
 </div> {# Closes right column. #}
-
-<div class="col col-sm-12 col-lg-4"> {# far right columns #}
- <div class="form-group">
-    <label for="exampleFormControlTextarea1">Print Notes</label>
-    <textarea class="form-control" id="printNotes" name="printnotes" rows="5"></textarea>
-  </div>
-  
-</div> {# closes far right column #}
 </div> {# Closes row. #}
 {% endblock %}
