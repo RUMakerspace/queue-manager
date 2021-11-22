@@ -6,6 +6,7 @@ from helpers.alexandria import (
     userFolderExists,
     makeUserFolder,
     makeUserProjectFolder,
+    getValidPrintUsers,
 )
 
 edit = Blueprint("edit", __name__, template_folder="templates")
@@ -14,7 +15,8 @@ edit = Blueprint("edit", __name__, template_folder="templates")
 @edit.route("/")
 def show():
     try:
-        return render_template("edit.html")
+        validPrintUsers = getValidPrintUsers()
+        return render_template("edit.html", validPrintingUsers=validPrintUsers)
     except TemplateNotFound:
         abort(404)
 

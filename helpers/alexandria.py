@@ -95,3 +95,24 @@ def makeUserFolder(userString: str) -> None:
 
 def makeUserProjectFolder(userString: str, userFolderString: str) -> None:
     mkdir(join(join(basePath, userString), userFolderString))
+
+
+def getValidPrintUsers(onlyValid: bool = True) -> list:
+    with open(join(basePath, "makerspaceStaff.json"), "r") as staff:
+        return json.loads(staff.read())
+
+
+def addValidPrintUsers(newUser: dict) -> None:
+    # newUser must contain stringName: str, isActive: bool
+    if not isfile(join(basePath, "makerspaceStaff.json")):
+        users = [newUser]
+        with open(join(basePath, "makerspaceStaff.json"), "w") as qg:
+            qg.write(json.dumps(users))
+    else:
+        currentUsers = json.loads(
+            open(join(basePath, "makerspaceStaff.json"), "r").read()
+        )
+        currentUsers.append(newUser)
+
+        with open(join(basePath, "makerspaceStaff.json"), "w") as qg:
+            qg.write(json.dumps(currentUsers))
