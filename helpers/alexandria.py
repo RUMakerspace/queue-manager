@@ -99,6 +99,8 @@ def makeUserProjectFolder(userString: str, userFolderString: str) -> None:
 
 def getValidPrintUsers(onlyValid: bool = True) -> list:
     with open(join(basePath, "makerspaceStaff.json"), "r") as staff:
+        if onlyValid:
+            return [x for x in json.loads(staff.read()) if x["isValid"] == True]
         return json.loads(staff.read())
 
 
