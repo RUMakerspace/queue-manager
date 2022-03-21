@@ -13,6 +13,8 @@ from users import Users
 import flask_login
 from flask_login import LoginManager, login_required, login_user, logout_user
 
+from flask_sqlalchemy import SQLAlchemy
+
 # APScheduler for scheduled tasks.
 from flask_apscheduler import APScheduler
 

@@ -2,6 +2,8 @@ from os import listdir, mkdir
 from os.path import isfile, join, isdir
 from pprint import pprint
 import json
+import shelve
+
 
 # basePath = """//alexandria.rutgers.edu/makerspace-shared/!3D Prints/"""
 basePath = """./Prints/"""
@@ -39,8 +41,8 @@ def produceToFileParentInfo():
 
     output = []
     for u in userFolders:
-        g = []
-        if g := produceUserSubmissions(u):
+        g = produceUserSubmissions(u)
+        if g != []:
             output.append({"user": u, "dates": g})
 
     with open("./db/alexandria.json", "w") as alex:
